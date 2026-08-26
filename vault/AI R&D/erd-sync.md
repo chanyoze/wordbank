@@ -1,5 +1,5 @@
 ---
-sidebar_label: "erd-sync 스킬"
+sidebar_label: "01. erd-sync 스킬"
 sidebar_position: 1
 slug: /ai-rnd/erd-sync
 tags: [skill, erd, oracle, vuerd, db-sync, claude-code]

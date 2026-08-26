@@ -1,0 +1,974 @@
+<title>기억은 조용히 바뀝니다</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500;600&family=IBM+Plex+Sans+KR:wght@200;300;400;500;600;700&display=swap">
+
+<style>
+/* ============ tokens ============ */
+:root{
+  --paper:#F1F2EE;
+  --paper-2:#E7E9E3;
+  --grid:rgba(22,25,28,.055);
+  --rule:#C7CBC1;
+  --ink:#161A1C;
+  --ink-2:#3E464B;
+  --ink-3:#767E82;
+  --mark:#D6480B;
+  --mark-ink:#B93D08;
+  --mark-wash:rgba(214,72,11,.10);
+  --panel:rgba(231,233,227,.97);
+  --shadow:rgba(22,25,28,.13);
+}
+@media (prefers-color-scheme: dark){
+  :root:not([data-theme="light"]){
+    --paper:#15181A;
+    --paper-2:#1D2124;
+    --grid:rgba(241,242,238,.05);
+    --rule:#333A3E;
+    --ink:#EDEFEA;
+    --ink-2:#B3BAB9;
+    --ink-3:#7A8385;
+    --mark:#FF7C38;
+    --mark-ink:#FF8F52;
+    --mark-wash:rgba(255,124,56,.13);
+    --panel:rgba(29,33,36,.97);
+    --shadow:rgba(0,0,0,.45);
+  }
+}
+:root[data-theme="dark"]{
+  --paper:#15181A;
+  --paper-2:#1D2124;
+  --grid:rgba(241,242,238,.05);
+  --rule:#333A3E;
+  --ink:#EDEFEA;
+  --ink-2:#B3BAB9;
+  --ink-3:#7A8385;
+  --mark:#FF7C38;
+  --mark-ink:#FF8F52;
+  --mark-wash:rgba(255,124,56,.13);
+  --panel:rgba(29,33,36,.97);
+  --shadow:rgba(0,0,0,.45);
+}
+
+*,*::before,*::after{box-sizing:border-box}
+html{font-size:clamp(12px,min(1.02vw,1.92vh),21px)}
+body{
+  margin:0;
+  background:var(--paper);
+  color:var(--ink);
+  font-family:"IBM Plex Sans KR","Malgun Gothic",system-ui,sans-serif;
+  font-weight:300;
+  -webkit-font-smoothing:antialiased;
+  overflow:hidden;
+  height:100vh;
+}
+body::before{
+  content:"";position:fixed;inset:0;pointer-events:none;z-index:0;
+  background-image:linear-gradient(var(--grid) 1px,transparent 1px),linear-gradient(90deg,var(--grid) 1px,transparent 1px);
+  background-size:2.6rem 2.6rem;
+}
+
+/* ============ deck shell ============ */
+.deck{position:relative;height:100vh;width:100vw;z-index:1}
+
+.slide{
+  position:absolute;inset:0;
+  display:flex;align-items:center;
+  padding:4.2rem 5rem 5.4rem 8.2rem;
+  opacity:0;visibility:hidden;
+  transition:opacity .4s ease,visibility .4s;
+}
+.slide.is-active{opacity:1;visibility:visible}
+.slide-inner{width:100%;max-width:62rem}
+.slide.wide .slide-inner{max-width:72rem}
+
+/* ============ sheet furniture ============ */
+.rail{
+  position:fixed;left:0;top:0;bottom:0;width:5.4rem;z-index:5;
+  border-right:1px solid var(--rule);
+  display:flex;flex-direction:column;align-items:center;justify-content:space-between;
+  padding:1.6rem 0;
+}
+.rail-mark{
+  font-family:"IBM Plex Mono",monospace;font-size:.62rem;font-weight:600;
+  letter-spacing:.16em;color:var(--ink-3);
+  writing-mode:vertical-rl;text-orientation:mixed;
+}
+.rail-no{
+  font-family:"IBM Plex Mono",monospace;font-weight:600;text-align:center;
+  font-size:1.05rem;color:var(--ink);font-variant-numeric:tabular-nums;
+}
+.rail-no small{display:block;font-size:.6rem;color:var(--ink-3);font-weight:400;margin-top:.15rem}
+
+.block{
+  position:fixed;left:5.4rem;right:0;bottom:0;z-index:5;height:3.1rem;
+  border-top:1px solid var(--rule);
+  display:flex;align-items:stretch;
+  font-family:"IBM Plex Mono",monospace;font-size:.66rem;letter-spacing:.08em;
+  color:var(--ink-3);
+  background:var(--paper);
+}
+.block-cell{display:flex;align-items:center;padding:0 1.3rem;border-right:1px solid var(--rule);white-space:nowrap}
+.block-cell b{color:var(--ink-2);font-weight:500}
+.block-cell.part{color:var(--mark);font-weight:600}
+.block-cell.grow{flex:1;border-right:none;justify-content:flex-end;gap:1.1rem;overflow:hidden}
+.keyhint{opacity:.85;display:flex;align-items:center;gap:.3rem}
+kbd{
+  font-family:"IBM Plex Mono",monospace;font-size:.62rem;
+  border:1px solid var(--rule);border-radius:2px;padding:.1rem .35rem;color:var(--ink-2);
+}
+.progress{position:fixed;left:5.4rem;right:0;bottom:3.1rem;height:2px;z-index:6}
+.progress i{display:block;height:100%;background:var(--mark);transition:width .4s ease}
+
+/* ============ type ============ */
+.eyebrow{
+  font-family:"IBM Plex Mono",monospace;font-size:.74rem;font-weight:500;
+  letter-spacing:.2em;color:var(--mark);margin:0 0 1.7rem;
+  display:flex;align-items:center;gap:.8rem;
+}
+.eyebrow::after{content:"";height:1px;flex:1;background:var(--rule);max-width:9rem}
+
+h1{font-size:4.4rem;font-weight:600;line-height:1.14;letter-spacing:-.035em;margin:0;text-wrap:balance}
+h2{font-size:3.05rem;font-weight:600;line-height:1.24;letter-spacing:-.03em;margin:0 0 2rem;text-wrap:balance}
+h3{font-size:1.5rem;font-weight:500;line-height:1.5;letter-spacing:-.02em;margin:0 0 .9rem}
+p{font-size:1.32rem;line-height:1.72;color:var(--ink-2);margin:0 0 1.1rem;max-width:44em}
+p.lead{font-size:1.6rem;color:var(--ink);font-weight:300}
+strong{font-weight:600;color:var(--ink)}
+em{font-style:normal;color:var(--mark-ink);font-weight:500}
+
+.quote{font-size:3.5rem;font-weight:200;line-height:1.36;letter-spacing:-.03em;margin:0;text-wrap:balance;color:var(--ink);max-width:none}
+.quote .hl{font-weight:500}
+.attrib{font-family:"IBM Plex Mono",monospace;font-size:.78rem;letter-spacing:.14em;color:var(--ink-3);margin-top:2.4rem}
+
+/* pen mark */
+.marked{position:relative;display:inline-block;white-space:nowrap}
+.marked svg{position:absolute;left:-.08em;right:-.08em;bottom:-.24em;width:calc(100% + .16em);height:.4em;overflow:visible;pointer-events:none}
+.marked path{fill:none;stroke:var(--mark);stroke-width:7;stroke-linecap:round;stroke-dasharray:420;stroke-dashoffset:420}
+.is-active .marked path{animation:draw .72s cubic-bezier(.5,0,.2,1) .55s forwards}
+@keyframes draw{to{stroke-dashoffset:0}}
+
+/* ============ term slide ============ */
+.term-head{display:flex;align-items:baseline;gap:1.4rem;flex-wrap:wrap;margin-bottom:.4rem}
+.term-ko{font-size:3.4rem;font-weight:600;letter-spacing:-.035em;line-height:1.15}
+.term-en{font-family:"IBM Plex Mono",monospace;font-size:1.05rem;color:var(--ink-3);letter-spacing:.04em}
+.term-def{
+  font-size:1.6rem;font-weight:300;line-height:1.6;color:var(--ink);
+  border-left:2px solid var(--mark);padding-left:1.4rem;margin:1.8rem 0 2rem;max-width:42em;
+}
+
+/* ============ pieces ============ */
+.stack{display:flex;flex-direction:column;gap:1.5rem}
+.cols{display:grid;grid-template-columns:1fr 1fr;gap:2.6rem}
+.cols-3{display:grid;grid-template-columns:repeat(3,1fr);gap:1.6rem}
+
+.step{display:grid;grid-template-columns:2.5rem 1fr;gap:1.4rem;align-items:baseline}
+.step-n{font-family:"IBM Plex Mono",monospace;font-size:.95rem;font-weight:600;color:var(--mark);font-variant-numeric:tabular-nums}
+.step-b{font-size:1.5rem;line-height:1.58;font-weight:300;color:var(--ink)}
+.step-b small{display:block;font-size:.98rem;color:var(--ink-3);margin-top:.4rem;line-height:1.6}
+.step.term .step-n{color:var(--ink)}
+.step.term .step-b{font-weight:400}
+
+.card{border:1px solid var(--rule);background:var(--paper-2);padding:1.7rem 1.8rem;display:flex;flex-direction:column;gap:.7rem}
+.card-h{font-family:"IBM Plex Mono",monospace;font-size:.72rem;letter-spacing:.16em;color:var(--ink-3)}
+.card-b{font-size:1.2rem;line-height:1.62;color:var(--ink-2)}
+.card-b i{color:var(--ink-3);font-style:normal}
+.card.hot{border-color:var(--mark);background:var(--mark-wash)}
+.card.hot .card-h{color:var(--mark)}
+.card.hot .card-b{color:var(--ink)}
+
+table{width:100%;border-collapse:collapse;font-size:1.14rem}
+th{font-family:"IBM Plex Mono",monospace;font-size:.72rem;font-weight:500;letter-spacing:.15em;text-align:left;color:var(--ink-3);padding:0 1.6rem .85rem 0;border-bottom:1px solid var(--rule)}
+th.hot{color:var(--mark)}
+td{padding:.95rem 1.6rem .95rem 0;border-bottom:1px solid var(--rule);color:var(--ink-2);line-height:1.55;vertical-align:top}
+th:last-child,td:last-child{padding-right:0}
+td.hot{color:var(--ink)}
+td.q{font-family:"IBM Plex Mono",monospace;font-size:.98rem;color:var(--ink);width:36%}
+.tbl-wrap{overflow-x:auto}
+
+pre{
+  font-family:"IBM Plex Mono",monospace;font-size:1.02rem;line-height:1.75;
+  background:var(--paper-2);border:1px solid var(--rule);
+  padding:1.5rem 1.7rem;margin:0;overflow-x:auto;color:var(--ink-2);
+}
+pre b{color:var(--mark-ink);font-weight:600}
+pre i{color:var(--ink-3);font-style:normal}
+
+.tone{display:grid;grid-template-columns:auto 1fr;gap:1.2rem 1.4rem;align-items:center}
+.tone-x,.tone-o{font-family:"IBM Plex Mono",monospace;font-size:1.1rem;font-weight:600}
+.tone-x{color:var(--ink-3)}
+.tone-o{color:var(--mark)}
+.tone-l{font-size:1.75rem;font-weight:300;line-height:1.45}
+.tone-l.dim{color:var(--ink-3)}
+.tone-l.on{color:var(--ink);font-weight:500}
+
+.spectrum{display:flex;align-items:stretch;border:1px solid var(--rule);margin:1.6rem 0 1.4rem;overflow-x:auto}
+.sp{flex:1;min-width:9rem;padding:1.2rem 1.1rem;border-right:1px solid var(--rule);display:flex;flex-direction:column;gap:.45rem}
+.sp:last-child{border-right:none}
+.sp-t{font-size:1.12rem;font-weight:500;color:var(--ink-3)}
+.sp-d{font-size:.92rem;color:var(--ink-3);line-height:1.5}
+.sp.now{background:var(--mark-wash)}
+.sp.now .sp-t{color:var(--mark);font-weight:600}
+.sp.now .sp-d{color:var(--ink-2)}
+.sp-flag{font-family:"IBM Plex Mono",monospace;font-size:.64rem;letter-spacing:.14em;color:var(--mark)}
+
+.foot{margin-top:2.4rem;padding-top:1.2rem;border-top:1px solid var(--rule);font-size:1.05rem;color:var(--ink-3);line-height:1.68;max-width:46em}
+.foot b{color:var(--ink-2);font-weight:500}
+
+.tag{display:inline-block;font-family:"IBM Plex Mono",monospace;font-size:.68rem;letter-spacing:.14em;border:1px solid var(--rule);padding:.35rem .7rem;color:var(--ink-3)}
+.tag.hot{border-color:var(--mark);color:var(--mark)}
+
+.req{display:flex;flex-direction:column;gap:1.3rem}
+.req-i{display:grid;grid-template-columns:auto 1fr;gap:1.3rem;align-items:baseline;border-bottom:1px solid var(--rule);padding-bottom:1.3rem}
+.req-i:last-child{border-bottom:none;padding-bottom:0}
+.req-n{font-family:"IBM Plex Mono",monospace;font-size:1.5rem;font-weight:600;color:var(--mark);font-variant-numeric:tabular-nums}
+.req-t{font-size:1.45rem;font-weight:500;color:var(--ink);line-height:1.45}
+.req-d{font-size:1.08rem;color:var(--ink-3);line-height:1.62;margin-top:.4rem}
+.slide-inner code{font-family:"IBM Plex Mono",monospace;font-size:.93em;color:var(--mark-ink);background:var(--mark-wash);padding:.08rem .35rem}
+.req-d code{font-family:"IBM Plex Mono",monospace;font-size:.95rem;color:var(--mark-ink);background:var(--mark-wash);padding:.08rem .35rem}
+.tbl-tools td.q{width:20%}
+.tbl-tools th:last-child,.tbl-tools td:last-child{width:14%}
+
+/* stagger */
+.is-active .stagger>*{animation:rise .55s cubic-bezier(.2,.7,.3,1) backwards}
+.is-active .stagger>*:nth-child(1){animation-delay:.06s}
+.is-active .stagger>*:nth-child(2){animation-delay:.13s}
+.is-active .stagger>*:nth-child(3){animation-delay:.2s}
+.is-active .stagger>*:nth-child(4){animation-delay:.27s}
+.is-active .stagger>*:nth-child(5){animation-delay:.34s}
+.is-active .stagger>*:nth-child(6){animation-delay:.41s}
+@keyframes rise{from{opacity:0;transform:translateY(.7rem)}to{opacity:1;transform:none}}
+
+/* ============ notes ============ */
+.notes{
+  position:fixed;left:5.4rem;right:0;bottom:3.1rem;z-index:7;
+  background:var(--panel);border-top:1px solid var(--mark);
+  padding:1.4rem 2.2rem 1.5rem;max-height:44vh;overflow-y:auto;
+  box-shadow:0 -12px 34px var(--shadow);display:none;
+}
+body.notes-on .slide.is-active .notes{display:block}
+.notes h4{font-family:"IBM Plex Mono",monospace;font-size:.68rem;letter-spacing:.18em;color:var(--mark);margin:0 0 .85rem;font-weight:500}
+.notes ul{margin:0;padding-left:1.1rem;display:flex;flex-direction:column;gap:.55rem}
+.notes li{font-size:.98rem;line-height:1.62;color:var(--ink-2)}
+.notes li b{color:var(--ink);font-weight:500}
+.notes code{font-family:"IBM Plex Mono",monospace;font-size:.88rem;background:var(--mark-wash);padding:.1rem .35rem;color:var(--mark-ink)}
+
+/* ============ cover ============ */
+.cover .slide-inner{max-width:70rem}
+.cover-meta{font-family:"IBM Plex Mono",monospace;font-size:.78rem;letter-spacing:.2em;color:var(--ink-3);margin-bottom:2.6rem;display:flex;gap:1.6rem;flex-wrap:wrap}
+.cover-meta b{color:var(--mark);font-weight:600}
+.cover-sub{font-size:1.45rem;color:var(--ink-2);margin-top:2rem;font-weight:300;line-height:1.65;max-width:38em}
+
+.section-no{font-family:"IBM Plex Mono",monospace;font-size:8rem;font-weight:200;line-height:1;color:var(--rule);letter-spacing:-.04em;margin-bottom:1rem;font-variant-numeric:tabular-nums}
+.part-label{font-family:"IBM Plex Mono",monospace;font-size:.74rem;letter-spacing:.22em;color:var(--mark);margin-bottom:1.4rem;font-weight:600}
+
+@media (max-width:900px){
+  .slide{padding:3rem 2rem 4.6rem 6.4rem}
+  .cols,.cols-3{grid-template-columns:1fr}
+  h1{font-size:3rem}h2{font-size:2.2rem}.quote{font-size:2.2rem}
+  .term-ko{font-size:2.3rem}.section-no{font-size:5rem}
+}
+@media (prefers-reduced-motion:reduce){
+  *{animation:none !important;transition:none !important}
+  .marked path{stroke-dashoffset:0}
+}
+</style>
+
+<div class="rail">
+  <div class="rail-mark">AI R&amp;D · 사내교육</div>
+  <div class="rail-no"><span id="railNo">01</span><small id="railTot">/36</small></div>
+</div>
+
+<div class="progress"><i id="prog"></i></div>
+
+<div class="block">
+  <div class="block-cell part" id="partName">—</div>
+  <div class="block-cell"><b id="secName">표지</b></div>
+  <div class="block-cell grow">
+    <span class="keyhint"><kbd>←</kbd><kbd>→</kbd> 이동</span>
+    <span class="keyhint"><kbd>N</kbd> 진행 노트</span>
+    <span>AI 기초 · 남기는 습관</span>
+  </div>
+</div>
+
+<main class="deck" id="deck">
+
+<!-- 01 표지 -->
+<section class="slide cover is-active" data-part="—" data-sec="표지">
+  <div class="slide-inner stagger">
+    <div class="cover-meta"><span>AI R&amp;D 사내교육 <b>01</b></span><span>2026</span></div>
+    <h1>기억은 지워지는 게 아니라<br>조용히 <span class="marked">바뀝니다<svg viewBox="0 0 200 12" preserveAspectRatio="none"><path d="M3,8 C48,2 96,11 142,5 C168,2 186,7 197,5"/></svg></span></h1>
+    <p class="cover-sub">코드에도, AI에게도 그 ‘왜’는 남아 있지 않습니다.<br>AI를 제대로 쓴다는 게 무슨 뜻인지, 그리고 그 핵심이 왜 기록인지를 보겠습니다.</p>
+  </div>
+  <aside class="notes"><h4>진행 노트</h4><ul>
+    <li>이 세션의 목표는 <b>AI를 제대로 쓰는 법</b>이고, 그 핵심이 기록이라는 데까지 데려가는 것이다.</li>
+    <li>도구 자랑·성능 자랑은 쓰지 않는다. 논조는 “AI가 대단하다”가 아니라 <b>“AI로 짜면 이게 안 남는다”</b>다.</li>
+    <li>오늘 순서를 한 번 읽어주고 시작하면 좋다 — <b>① 왜 AI를 써야 하는가 ② 왜 남겨야 하는가 ③ 뭘 할 건지 ④ 필요한 단어 ⑤ 마무리.</b></li>
+    <li>이 문장은 <b>마지막 장에서 한 번 더</b> 그대로 나온다. 사람들이 기억하는 건 한 문장뿐.</li>
+  </ul></aside>
+</section>
+
+<!-- 02 PART 1 표지 -->
+<section class="slide" data-part="PART 1" data-sec="왜 AI를 써야 하는가">
+  <div class="slide-inner stagger">
+    <div class="part-label">PART 1</div>
+    <h1>왜 AI를 써야 하는가</h1>
+    <p class="cover-sub">손코딩 얘기부터 하겠습니다.<br><strong>미리 말씀드리면, 이건 반박이 아닙니다.</strong></p>
+  </div>
+  <aside class="notes"><h4>진행 노트</h4><ul>
+    <li><b>핵심 원칙: 손코딩 지향자를 적으로 만들지 않는다.</b> 그들의 주장을 오늘의 근거로 흡수한다.</li>
+    <li>대립 구도로 열면 방어 반응이 나오고, 그 뒤 내용은 전부 튕겨 나간다.</li>
+    <li>이 파트의 도착점은 <b>“AI를 쓰되, 이해가 밖에 남는 방식으로”</b>다. 거기까지 네 장으로 간다.</li>
+  </ul></aside>
+</section>
+
+<!-- 03 손코딩 1,2 -->
+<section class="slide" data-part="PART 1" data-sec="왜 AI를 써야 하는가">
+  <div class="slide-inner stagger">
+    <p class="eyebrow">인정하고 시작합니다</p>
+    <div class="stack">
+      <div class="step"><div class="step-n">01</div><div class="step-b">“직접 짜야 이해가 남는다” — <strong>맞는 말입니다.</strong><small>부정하지 않는다.</small></div></div>
+      <div class="step"><div class="step-n">02</div><div class="step-b">AI로 짜면 <strong>이해 없이 그냥 통과</strong>해버릴 수 있다 — 이것도 사실입니다.<small>이걸 솔직히 인정하는 것이 오늘 신뢰를 얻는 지점.</small></div></div>
+    </div>
+  </div>
+  <aside class="notes"><h4>진행 노트</h4><ul>
+    <li>②를 빼면 안 된다. <b>AI의 리스크를 먼저 인정해야</b> 그다음 말이 설득력을 갖는다.</li>
+    <li>여기까지는 손코딩파 편에 서 있는 상태다. 아직 뒤집지 않는다.</li>
+  </ul></aside>
+</section>
+
+<!-- 04 손코딩 3,4 -->
+<section class="slide" data-part="PART 1" data-sec="왜 AI를 써야 하는가">
+  <div class="slide-inner stagger">
+    <p class="eyebrow">그런데</p>
+    <div class="stack">
+      <div class="step"><div class="step-n">03</div><div class="step-b">손코딩도 그 ‘이해’를 <strong>지켜주지 못합니다.</strong><small>내 머릿속에만 있고 · 3개월이면 흐려지고 · 팀에 전달되지 않고 · 내가 자리를 비우면 같이 사라진다.</small></div></div>
+      <div class="step"><div class="step-n">04</div><div class="step-b">그래서 답은 <em>‘AI를 쓰지 말자’가 아닙니다.</em><small>AI로 빠르게 짜되, 이해한 것을 <b>밖으로 꺼내 남긴다.</b> 정리를 하려면 이해해야 하므로, 산출물 작성 자체가 이해 검증 장치가 된다.</small></div></div>
+    </div>
+  </div>
+  <aside class="notes"><h4>진행 노트</h4><ul>
+    <li>③이 이 파트의 핵심. <b>손코딩파가 지키려는 가치(이해)를 손코딩이 지켜주지 못한다</b>는 지적이라, 부정이 아니라 “당신 말이 맞기 때문에 이걸 합니다”가 된다.</li>
+    <li>④에서 <b>처음으로 AI 쪽으로 넘어간다.</b> ①②에서 리스크를 먼저 인정해뒀기 때문에 여기서 방어 반응이 안 나온다 — 순서를 바꾸면 안 된다.</li>
+    <li>“AI를 쓰면 이해 없이 통과한다”던 ②의 답이 ④다. <b>통과하지 않게 만드는 장치가 기록</b>이다.</li>
+  </ul></aside>
+</section>
+
+<!-- 05 손코딩 마무리 -->
+<section class="slide" data-part="PART 1" data-sec="왜 AI를 써야 하는가">
+  <div class="slide-inner stagger">
+    <p class="eyebrow">그래서 오늘의 답</p>
+    <p class="quote">AI를 쓰되,<br><span class="hl">이해가 밖에 남는 방식으로.</span></p>
+    <p class="lead" style="margin-top:2.2rem">진짜 대립축은 손코딩 대 AI가 아니라 <strong>이해하고 넘어가느냐, 그냥 넘어가느냐</strong>였습니다.<br>속도는 AI에게 넘기고, 우리가 쥐는 건 <em>왜 그렇게 했는가</em>입니다.</p>
+  </div>
+  <aside class="notes"><h4>진행 노트</h4><ul>
+    <li>이 문장으로 1부를 닫는다. 여기서 <b>손코딩파가 적이 아니라 우군</b>이 된다 — 그들이 지키려던 ‘이해’를 지키는 방법으로 제시되기 때문.</li>
+    <li>천천히 읽고, 넘어가기 전에 한 박자 쉰다.</li>
+    <li>“이해가 밖에 남는 방식”이 무엇인지는 <b>아직 말하지 않는다.</b> 그게 2부다.</li>
+  </ul></aside>
+</section>
+
+<!-- 06 PART 2 표지 -->
+<section class="slide" data-part="PART 2" data-sec="기록의 중요성">
+  <div class="slide-inner stagger">
+    <div class="part-label">PART 2</div>
+    <h1>기억을 믿지 마십시오</h1>
+    <p class="cover-sub">‘이해를 밖에 남긴다’ — 왜 그게 필수인지 봅니다.<br><strong>질문 두 개로 시작하겠습니다.</strong></p>
+  </div>
+  <aside class="notes"><h4>진행 노트</h4><ul>
+    <li>오늘 <b>가장 긴 파트</b>다. 여기가 무너지면 나머지는 의미 없다.</li>
+    <li>개인 관점(“내 기억을 믿지 마라”)이 팀 자산 관점보다 훨씬 세다. 팀 얘기는 맨 마지막에 한 줄만.</li>
+    <li>설명부터 시작하지 않는다. <b>질문 두 개</b>로 자기 문제로 전환시킨 다음에 이야기를 연다.</li>
+  </ul></aside>
+</section>
+
+<!-- 07 질문1 -->
+<section class="slide" data-part="PART 2" data-sec="기록의 중요성">
+  <div class="slide-inner stagger">
+    <p class="eyebrow">질문 하나</p>
+    <p class="quote">본인이 <span class="hl">6개월 전</span>에 짠 기능,<br>지금 물어보면 바로 설명 가능하세요?</p>
+  </div>
+  <aside class="notes"><h4>진행 노트</h4><ul>
+    <li><b>답을 받지 않아도 된다.</b> 목적은 자기 문제로 전환시키는 것.</li>
+    <li>이 질문이 슬라이드 열 장보다 세다. <b>3~5초 정적을 견딜 것.</b></li>
+  </ul></aside>
+</section>
+
+<!-- 08 질문2 -->
+<section class="slide" data-part="PART 2" data-sec="기록의 중요성">
+  <div class="slide-inner stagger">
+    <p class="eyebrow">질문 둘</p>
+    <p class="quote">“이거 왜 이렇게 하셨어요?”<br><span class="hl">“…아, 이유가 있었는데. 뭐였더라.”</span></p>
+    <p class="attrib">코드 리뷰에서 · 전원이 겪은 장면</p>
+  </div>
+  <aside class="notes"><h4>진행 노트</h4><ul>
+    <li>이 장면은 예외 없이 전원이 겪었다. <b>여기서부터 시작한다.</b></li>
+    <li>“오늘 이야기는 저 두 번째 말을 없애는 방법입니다”로 넘어가면 자연스럽다.</li>
+  </ul></aside>
+</section>
+
+<!-- 09 4단 논리 -->
+<section class="slide wide" data-part="PART 2" data-sec="기록의 중요성">
+  <div class="slide-inner stagger">
+    <p class="eyebrow">4단 논리 · 이 순서를 지킬 것</p>
+    <div class="stack">
+      <div class="step term"><div class="step-n">1</div><div class="step-b">사람은 잊는다.<small>전제</small></div></div>
+      <div class="step term"><div class="step-n">2</div><div class="step-b">코드를 다시 봐도 <strong>복구되지 않는다.</strong><small>코드엔 ‘무엇’만 있고 ‘왜’는 없다.</small></div></div>
+      <div class="step term"><div class="step-n">3</div><div class="step-b">AI에게 물어봐도 <strong>복구되지 않는다.</strong><small>AI도 결국 코드만 본다.</small></div></div>
+      <div class="step term"><div class="step-n">⇒</div><div class="step-b"><em>그 순간에 안 적으면 영구 소실이다.</em></div></div>
+    </div>
+  </div>
+  <aside class="notes"><h4>진행 노트</h4><ul>
+    <li><b>2·3번이 있어야 1번이 위협이 된다.</b> “잊는다”만 말하면 “찾아보면 되죠”로 받아친다.</li>
+    <li><b>3번은 반드시 내가 먼저 꺼낸다.</b> AI를 잘 쓰는 사람이 제일 먼저 떠올리는 우회로다. 여기서 막지 못하면 세션 전체가 흔들린다.</li>
+  </ul></aside>
+</section>
+
+<!-- 10 코드가 답하지 못하는 것 -->
+<section class="slide wide" data-part="PART 2" data-sec="기록의 중요성">
+  <div class="slide-inner stagger">
+    <p class="eyebrow">코드에 남지 않는 것들</p>
+    <div class="tbl-wrap">
+      <table>
+        <thead><tr><th>코드가 답하는 것</th><th class="hot">코드가 답하지 못하는 것</th></tr></thead>
+        <tbody>
+          <tr><td>이 검증 로직은 무엇을 막는가</td><td class="hot"><strong>왜</strong> 이렇게까지 빡빡한가 — 어느 고객사 사고 때문에</td></tr>
+          <tr><td>이 테이블 구조는 어떻게 생겼나</td><td class="hot"><strong>왜</strong> 정규화를 깼나 — 성능 때문에 의도적으로</td></tr>
+          <tr><td>이 기능은 어떻게 동작하나</td><td class="hot"><strong>왜</strong> 다른 방식으로 안 했나 — 검토 후 폐기한 대안</td></tr>
+        </tbody>
+      </table>
+    </div>
+    <div class="foot">AI는 코드를 아무리 잘 읽어도 <b>오른쪽 칸을 만들어내지 못합니다.</b> 이건 사람 머릿속에만 있습니다.</div>
+  </div>
+  <aside class="notes"><h4>진행 노트</h4><ul>
+    <li>슬라이드는 <b>일반론으로 둔다.</b> 실제 사례는 여기서 <b>구두로 푼다</b> — 우리 코드베이스에서 떠오르는 건을 즉석에서 꺼내고, 팀원에게도 “비슷한 거 있으세요?”로 넘긴다.</li>
+    <li>슬라이드에 박아두면 읽고 끝나지만, 말로 풀면 각자 자기 사례를 떠올린다. <b>이 장은 대화하는 장이다.</b> 시간을 넉넉히 쓸 것.</li>
+    <li>“AI가 코드 읽으면 되잖아요” 반론에 대한 답이 이 한 장이다.</li>
+  </ul></aside>
+</section>
+
+<!-- 11 강조 1 -->
+<section class="slide" data-part="PART 2" data-sec="기록의 중요성">
+  <div class="slide-inner stagger">
+    <p class="eyebrow">강조 하나</p>
+    <h2>잊는 것보다<br><span class="marked">잘못 기억하는 것<svg viewBox="0 0 200 12" preserveAspectRatio="none"><path d="M3,7 C52,3 100,10 148,5 C170,2 188,8 197,5"/></svg></span>이<br>더 위험합니다.</h2>
+    <p class="lead">잊으면 다시 찾아봅니다. 그런데 잘못 기억하면 <strong>확신을 갖고 틀린 판단</strong>을 합니다.<br>기억은 조용히 재구성되기 때문에, 본인은 자기가 틀렸다는 걸 모릅니다.</p>
+  </div>
+  <aside class="notes"><h4>진행 노트</h4><ul>
+    <li>개발자에게 가장 아프게 꽂히는 지점. <b>“모른다”가 아니라 “틀린 걸 확신한다”</b>가 핵심.</li>
+    <li>본인이 겪은 사례가 있으면 한 줄 덧붙일 것.</li>
+  </ul></aside>
+</section>
+
+<!-- 12 강조 2 -->
+<section class="slide wide" data-part="PART 2" data-sec="기록의 중요성">
+  <div class="slide-inner stagger">
+    <p class="eyebrow">강조 둘</p>
+    <h2>기억이 사라진 게 아니라,<br>애초에 저장이 안 된 겁니다.</h2>
+    <p>결정하는 순간에는 그 이유가 <strong>너무 당연해서</strong> 적을 가치를 못 느낍니다. 그런데 그 ‘당연함’은 당시의 맥락(일정·고객 요구·제약)에 얹혀 있던 것이라, 맥락이 사라지면 같이 증발합니다.</p>
+    <div class="cols-3">
+      <div class="card"><div class="card-h">그래서</div><div class="card-b">적어야 할 것일수록 적을 필요를 못 느끼게 생겼습니다.</div></div>
+      <div class="card"><div class="card-h">따라서</div><div class="card-b">이건 <strong>의지로 풀 수 없습니다.</strong><br>습관과 자동화로만 풀립니다.</div></div>
+      <div class="card hot"><div class="card-h">그래서 숙제가</div><div class="card-b">‘문서 쓰기’가 아니라<br><strong>‘문서를 만들어주는 걸 만들기’</strong>입니다.</div></div>
+    </div>
+  </div>
+  <aside class="notes"><h4>진행 노트</h4><ul>
+    <li>이 장이 <b>오늘 숙제 설계의 근거</b>다. 세 번째 카드에서 3부를 자연스럽게 예고한다 — <b>여기서 “스킬”이라는 단어는 아직 쓰지 않는다.</b></li>
+    <li>“의지로 안 된다”를 말해주면 못 하던 사람의 죄책감이 줄고 저항이 낮아진다.</li>
+  </ul></aside>
+</section>
+
+<!-- 13 톤 -->
+<section class="slide wide" data-part="PART 2" data-sec="기록의 중요성">
+  <div class="slide-inner stagger">
+    <p class="eyebrow">말하는 방식</p>
+    <div class="tone">
+      <div class="tone-x">✕</div><div class="tone-l dim">“정리 안 하면 위험합니다”</div>
+      <div class="tone-o">●</div><div class="tone-l on">“그때 안 적으면 다시는 복구하지 못합니다”</div>
+    </div>
+    <div class="foot">
+      의사결정의 사유를 남기는 건 <b>ADR(Architecture Decision Record)</b>이라는 이름으로 이미 업계에서 널리 쓰이는 관행입니다. 우리가 처음 하는 이상한 시도가 아닙니다.
+    </div>
+  </div>
+  <aside class="notes"><h4>진행 노트</h4><ul>
+    <li><b>“위험하다”를 반복하면 훈계로 들려 반발을 부른다.</b> 비가역성으로 말할 것.</li>
+    <li>ADR은 “팀장 개인 취향이 아니다”라는 신뢰를 만든다. 길게 설명하지 말고 이름만 언급.</li>
+  </ul></aside>
+</section>
+
+<!-- 14 왜 하필 지금인가 -->
+<section class="slide wide" data-part="PART 2" data-sec="기록의 중요성">
+  <div class="slide-inner stagger">
+    <p class="eyebrow">왜 하필 지금인가</p>
+    <p class="lead">정리의 필요성은 20년 전에도 옳은 말이었습니다. 그래서 <em>다들 안 했습니다.</em></p>
+    <div class="cols">
+      <div class="card"><div class="card-h">예전</div><div class="card-b">문서를 써도 <strong>아무도 안 읽어서</strong> 손해였습니다.<br>회수까지 몇 달, 혹은 영영.</div></div>
+      <div class="card hot"><div class="card-h">지금</div><div class="card-b">내가 쓴 것을 <strong>AI가 다음 작업에서 즉시 읽습니다.</strong><br>회수까지 며칠.</div></div>
+    </div>
+    <h3 style="margin-top:2.2rem">정리의 손익분기점이 ‘몇 달’에서 ‘며칠’로 당겨졌습니다.<br><span class="marked">정리가 처음으로 수지 맞는 일이 된 시점이 지금입니다.<svg viewBox="0 0 200 12" preserveAspectRatio="none"><path d="M2,8 C50,4 104,10 150,5 C172,3 188,7 198,6"/></svg></span></h3>
+  </div>
+  <aside class="notes"><h4>진행 노트</h4><ul>
+    <li>why에는 두 층이 있다 — <b>왜 이걸(why this)</b> 과 <b>왜 하필 지금(why now)</b>. 앞에서 전자를 했고 여기가 후자다.</li>
+    <li>“그래서 다들 안 했습니다”에서 웃음이 나오면 잘 가고 있는 것.</li>
+    <li>메시지: 이 정리는 <b>남 좋은 일이 아니라 내 AI를 더 똑똑하게 만드는 일</b>이다.</li>
+    <li>“팀 자산을 만들자”로 말하면 안 먹힌다. 반드시 <b>본인 이익</b>으로 말할 것.</li>
+    <li>“어떻게 AI가 그걸 읽느냐”는 질문이 나오면 <b>4부 용어(컨텍스트·에이전트)로 넘긴다.</b> 여기서 도구 얘기로 새지 말 것.</li>
+  </ul></aside>
+</section>
+
+<!-- 15 반론 -->
+<section class="slide wide" data-part="PART 2" data-sec="기록의 중요성">
+  <div class="slide-inner stagger">
+    <p class="eyebrow">지금 이런 생각 하고 계실 겁니다</p>
+    <div class="tbl-wrap">
+      <table>
+        <tbody>
+          <tr><td class="q">“AI가 코드 읽으면 되잖아요”</td><td class="hot">코드엔 ‘무엇’만 있고 <strong>‘왜’가 없습니다.</strong> AI도 코드만 봅니다.</td></tr>
+          <tr><td class="q">“바빠서 못 해요”</td><td class="hot">그래서 숙제가 문서 쓰기가 아니라 <strong>문서를 만들어주는 걸 만드는 것</strong>입니다. 한 번 만들면 그다음부턴 명령 하나입니다.</td></tr>
+          <tr><td class="q">“어차피 금방 낡아요”</td><td class="hot">그래서 쓰는 게 아니라 <strong>재생성</strong>합니다. 몇 번을 돌려도 같은 결과가 나오게 만들면 됩니다.</td></tr>
+        </tbody>
+      </table>
+    </div>
+  </div>
+  <aside class="notes"><h4>진행 노트</h4><ul>
+    <li><b>뒤에서 나올 말을 앞에서 먼저 꺼낸다.</b> 2부의 완성도는 여기서 갈린다.</li>
+    <li>두 번째·세 번째 답변이 그대로 <b>3부(숙제)와 4부(용어) 예고</b>가 된다. 여기서 “그건 잠시 후에”로 끊고 넘어가면 흐름이 붙는다.</li>
+    <li>세 번째 답변이 <b>멱등성</b>인데, 용어는 4부에서 나온다. <b>여기서 단어를 먼저 꺼내지 말 것</b> — 지금은 현상만 말하고, 4부에서 “아까 그게 이겁니다”로 회수한다.</li>
+  </ul></aside>
+</section>
+
+<!-- 16 휴식 -->
+<section class="slide" data-part="BREAK" data-sec="휴식">
+  <div class="slide-inner stagger">
+    <div class="part-label">BREAK</div>
+    <h1>여기까지가 <span class="marked">왜<svg viewBox="0 0 200 12" preserveAspectRatio="none"><path d="M4,8 C50,3 100,10 150,5 C172,3 188,7 197,5"/></svg></span>입니다.</h1>
+    <p class="cover-sub">돌아오면 <strong>뭘 할 건지</strong>를 봅니다.<br>숙제 하나, 그리고 그걸 하는 데 필요한 단어 여섯 개.</p>
+  </div>
+  <aside class="notes"><h4>진행 노트</h4><ul>
+    <li>여기서 <b>노트북을 켜두라고 미리 말해둔다.</b> 3부에서 바로 손을 쓰게 된다.</li>
+    <li>쉬는 동안 나오는 잡담이 사실 가장 좋은 피드백이다. 자리에 남아 있을 것.</li>
+  </ul></aside>
+</section>
+
+<!-- 17 PART 3 표지 -->
+<section class="slide" data-part="PART 3" data-sec="뭘 할 건지">
+  <div class="slide-inner stagger">
+    <div class="part-label">PART 3</div>
+    <h1>뭘 할 건지</h1>
+    <p class="cover-sub">오늘 요구하는 건 하나입니다 —<br><strong>자기 작업물을, 틈틈이, 어딘가에 남기는 습관.</strong></p>
+  </div>
+  <aside class="notes"><h4>진행 노트</h4><ul>
+    <li>여기부터 톤을 실무로 완전히 전환한다.</li>
+    <li>가능하면 이 자리에서 각자 노트북을 열게 하고 <b>마지막엔 같이 시작</b>한다. 시작만 하면 완주율이 크게 오른다.</li>
+    <li><b>단어를 아직 안 배운 상태로 숙제를 듣는다.</b> 그래서 이 파트에서는 용어를 쓰지 않고 <b>동작으로만</b> 설명한다 — “두 번 돌려도 파일이 하나”, “틀리면 바로 확인 가능하게”.</li>
+  </ul></aside>
+</section>
+
+<!-- 18 요구 -->
+<section class="slide" data-part="PART 3" data-sec="뭘 할 건지">
+  <div class="slide-inner stagger">
+    <p class="eyebrow">오늘 요구하는 것은 하나입니다</p>
+    <h2>자기 작업물을, 틈틈이,<br>자기 보관소에 남기는 것.</h2>
+    <div class="cols-3">
+      <div class="card"><div class="card-h">형식</div><div class="card-b">자유</div></div>
+      <div class="card"><div class="card-h">분량</div><div class="card-b">자유</div></div>
+      <div class="card"><div class="card-h">완성도</div><div class="card-b">신경 쓰지 마십시오</div></div>
+    </div>
+    <div class="foot">필수 요건은 <b>없습니다.</b> 지금 단계에서 중요한 건 품질이 아니라 <b>끊기지 않는 것</b>입니다. 구조는 나중에 잡습니다.</div>
+  </div>
+  <aside class="notes"><h4>진행 노트</h4><ul>
+    <li>요구를 최대한 낮춘다. <b>습관 먼저, 구조는 나중.</b> 여기서 스키마를 요구하면 완주율이 떨어진다.</li>
+    <li><b>“필수 요건은 없습니다”를 반드시 소리 내어 말할 것.</b> 제약을 걸면 결과물은 고르게 나오지만, 첫 회차에는 안 하는 사람이 더 많이 생긴다. 이번엔 완주율을 택한다.</li>
+    <li>제약 없이 받으면 <b>결과물 편차가 커진다.</b> 그건 다음 회차에서 실물을 놓고 합의할 재료로 쓴다 — 지금 정하지 않는다.</li>
+  </ul></aside>
+</section>
+
+<!-- 19 개인에서 팀으로 -->
+<section class="slide" data-part="PART 3" data-sec="뭘 할 건지">
+  <div class="slide-inner stagger">
+    <p class="eyebrow">그리고 — 지금 하실 필요는 없습니다</p>
+    <p class="lead">이렇게 각자 쌓인 <strong>개인 보관소가 모이면</strong>,<br>우리 팀의 도메인 지식이 되고,<br>신규 인원이 코드를 뒤지지 않아도 되는 <strong>지도</strong>가 됩니다.</p>
+    <p><span class="tag">다음 회차들에서 다룹니다</span></p>
+  </div>
+  <aside class="notes"><h4>진행 노트</h4><ul>
+    <li>지금 강요하면 부담이고, 안 깔아두면 다음 회차가 갑작스러워진다. <b>한 줄만 예고하고 넘어간다.</b></li>
+    <li>“온톨로지”라는 단어는 4부에서 한 번 나온다. 여기서는 안 써도 된다.</li>
+  </ul></aside>
+</section>
+
+<!-- 20 숙제 정의 -->
+<section class="slide wide" data-part="PART 3" data-sec="뭘 할 건지">
+  <div class="slide-inner stagger">
+    <p class="eyebrow">무엇을 만드는가</p>
+    <h2>개인 RECAP 스킬</h2>
+    <p class="lead">내가 작업한 내용을 <strong>AI가 스스로 확인해서</strong> 정리하고,<br>MD 파일로 만들어, <strong>내 깃헙 레포에 커밋</strong>하는 스킬.</p>
+    <div class="cols-3">
+      <div class="card"><div class="card-h">입력</div><div class="card-b">최근 커밋 · 변경 파일<br><i>내가 붙여넣지 않습니다</i></div></div>
+      <div class="card"><div class="card-h">처리</div><div class="card-b">무엇을 했고,<br>왜 그렇게 정했는지 정리</div></div>
+      <div class="card hot"><div class="card-h">출력</div><div class="card-b">MD 파일 <strong>+ 커밋</strong></div></div>
+    </div>
+    <div class="foot"><b>문서를 쓰는 게 숙제가 아닙니다.</b> 문서를 만들어주는 것을 만드는 게 숙제입니다.<br><i>※ ‘스킬’은 반복 작업 절차를 이름 붙여 저장해둔 것 — 정확한 정의는 뒤에서 봅니다.</i></div>
+  </div>
+  <aside class="notes"><h4>진행 노트</h4><ul>
+    <li>마지막 줄을 강조. <b>2부에서 “의지로 안 되고 자동화로만 된다”고 한 것의 실행</b>이다.</li>
+    <li>“왜 그렇게 정했는지”는 커밋 로그에 없는 경우가 많다 — <b>거기서 사람이 한 줄 보태는 게 이 문서의 핵심 가치</b>라는 걸 짚어줄 것.</li>
+    <li><b>‘스킬’이라는 단어를 여기서 처음 쓴다.</b> 한 줄 각주로만 넘기고 정의는 4부로 미룬다 — 여기서 설명하기 시작하면 3부가 용어 강의가 된다.</li>
+  </ul></aside>
+</section>
+
+<!-- 21 도구 -->
+<section class="slide wide" data-part="PART 3" data-sec="뭘 할 건지">
+  <div class="slide-inner stagger">
+    <p class="eyebrow">어디서 만드는가 · 도구는 자유입니다</p>
+    <h2>스킬은 특정 도구의 기능이 아닙니다.</h2>
+    <p class="lead"><code>SKILL.md</code>는 <strong>개방형 표준</strong>입니다. 같은 파일이 도구를 바꿔도 그대로 돕니다.</p>
+    <div class="tbl-wrap tbl-tools">
+      <table>
+        <thead><tr><th>환경</th><th>스킬 위치</th><th>컨텍스트 파일</th><th class="hot">이 숙제</th></tr></thead>
+        <tbody>
+          <tr><td class="q">Claude Code</td><td><code>~/.claude/skills/</code></td><td><code>CLAUDE.md</code></td><td class="hot"><strong>가능</strong></td></tr>
+          <tr><td class="q">Codex CLI</td><td>레포에 두고 공유</td><td><code>AGENTS.md</code></td><td class="hot"><strong>가능</strong></td></tr>
+          <tr><td class="q">Gemini CLI</td><td><code>~/.gemini/skills/</code></td><td><code>GEMINI.md</code></td><td class="hot"><strong>가능</strong></td></tr>
+          <tr><td class="q">ChatGPT 웹 · 앱</td><td>워크스페이스 업로드</td><td>—</td><td class="hot">안 됩니다</td></tr>
+        </tbody>
+      </table>
+    </div>
+    <div class="foot">갈리는 건 파일 형식이 아니라 <b>AI가 내 파일시스템과 git에 직접 손을 댈 수 있느냐</b>입니다. ChatGPT 웹은 그게 안 돼서 이 숙제를 못 합니다 — 같은 곳에서 나온 <b>Codex CLI</b>를 쓰시면 됩니다.</div>
+  </div>
+  <aside class="notes"><h4>진행 노트</h4><ul>
+    <li>이 장의 목적은 <b>“그거 Claude 전용 아니냐”를 미리 없애는 것</b>이다.</li>
+    <li>말로 덧붙일 것: <b>Agent Skills는 Anthropic이 만들어 공개한 표준이고, 지금은 30개 넘는 도구가 같은 <code>SKILL.md</code>를 읽는다.</b> 도구를 갈아타도 스킬은 따라온다 — 그래서 지금 만드는 게 버려지지 않는다.</li>
+    <li>Codex는 <b>기존 커스텀 프롬프트(<code>~/.codex/prompts</code>)를 접고 스킬 쪽으로 옮겨갔다.</b> 방향이 한쪽으로 모이고 있다는 근거로 쓸 수 있다.</li>
+    <li>여기서 갈리는 이유가 <b>4부의 ‘챗봇 vs 에이전트’</b>다. 지금은 단어를 꺼내지 말고 <b>“직접 손을 댈 수 있느냐”로만</b> 말하고, 4부 에이전트 장에서 <b>“아까 ChatGPT 웹이 안 됐던 이유가 이겁니다”로 회수</b>한다.</li>
+    <li>ChatGPT 웹만 쓰는 인원이 있으면 <b>이 자리에서 CLI 설치를 안내</b>할 것 — 안 그러면 그 사람은 0단계에서 멈춘다. ChatGPT 스킬은 요금제 제약도 있어서, 애매하면 “CLI 쪽으로 가시라”로 정리하는 게 빠르다.</li>
+  </ul></aside>
+</section>
+
+<!-- 22 문서 예시 -->
+<section class="slide wide" data-part="PART 3" data-sec="뭘 할 건지">
+  <div class="slide-inner stagger">
+    <p class="eyebrow">예를 들면 이 정도 · 형식은 완전히 자유입니다</p>
+<pre>## 무엇을 했나
+- 계약 승인 단계에 반려 사유 필수 입력 추가 <i>(a3f91c2)</i>
+
+## <b>왜 그렇게 정했나</b>
+- 반려 사유를 선택값으로 두면 이력 추적이 끊긴다는 지적이 있었음
+- 별도 테이블 분리는 검토했으나 조회 경로가 하나뿐이라 보류
+
+## 다음에 볼 것
+- 반려 이력 조회 화면에서 사유 노출 여부 미정
+</pre>
+    <div class="foot"><b>「왜 그렇게 정했나」가 이 문서의 전부입니다.</b> 나머지는 코드를 읽으면 나옵니다.<br><i>※ 정해진 서식이 아니라 그냥 한 사람의 예시입니다. 본인에게 맞는 모양으로 바꾸세요.</i></div>
+  </div>
+  <aside class="notes"><h4>진행 노트</h4><ul>
+    <li>이 예시는 <b>우리 도메인 용어로 바꿔서</b> 보여주면 훨씬 잘 붙는다.</li>
+    <li>2부의 “코드가 답하지 못하는 것” 표가 여기서 실물이 된다. <b>두 번째 섹션이 그 칸이다.</b></li>
+    <li>분량이 이 정도면 충분하다는 것도 보여주는 장이다. <b>길게 쓰라는 게 아니다.</b></li>
+    <li><b>“이대로 쓰세요”로 들리지 않게 할 것.</b> 서식을 정해주면 다들 그대로 복사하고, 그러면 자기한테 맞는 모양을 못 찾는다. 각주를 반드시 소리 내어 읽는다.</li>
+    <li>커밋 해시 <code>(a3f91c2)</code>가 붙어 있는 이유는 <b>틀렸을 때 바로 확인하기 위해서</b>다 — 요건은 아니지만, 왜 좋은지는 말해줄 것. 4부 그라운딩에서 회수한다.</li>
+  </ul></aside>
+</section>
+
+<!-- 23 기본/심화 -->
+<section class="slide wide" data-part="PART 3" data-sec="뭘 할 건지">
+  <div class="slide-inner stagger">
+    <p class="eyebrow">난이도 · 기본만 해도 완주입니다</p>
+    <div class="cols">
+      <div class="card">
+        <div class="card-h">기본</div>
+        <div class="card-b">최근 커밋 몇 개를 읽어<br>요약 MD를 만들고 커밋한다.<br><br><strong>여기까지가 숙제입니다.</strong></div>
+      </div>
+      <div class="card hot">
+        <div class="card-h">심화 · 하고 싶은 사람만</div>
+        <div class="card-b">· 같은 날 다시 돌리면 새 파일이 생기지 않고 <strong>갱신</strong>되게<br>· 등장한 <strong>테이블 · 화면 · API 이름</strong> 뽑아내기<br>· 관련 문서끼리 <strong>링크</strong> 걸기</div>
+      </div>
+    </div>
+    <div class="foot">심화 세 줄이 <b>다음 회차들에서 다룰 내용</b>입니다. 미리 해보고 싶은 분만 하시면 됩니다.</div>
+  </div>
+  <aside class="notes"><h4>진행 노트</h4><ul>
+    <li>난이도를 나누지 않으면 <b>중간에 이탈하는 인원</b>이 생긴다. “기본까지가 숙제”를 명확히 할 것.</li>
+    <li>심화는 다음 회차의 예습이라, 해온 사람이 있으면 <b>다음 세션에서 그 사람이 발표</b>하게 하면 좋다.</li>
+    <li>심화 첫 줄이 <b>멱등성</b>인데 단어는 4부에서 나온다. 여기서는 <b>현상으로만</b> 말한다.</li>
+  </ul></aside>
+</section>
+
+<!-- 24 제출 -->
+<section class="slide wide" data-part="PART 3" data-sec="뭘 할 건지">
+  <div class="slide-inner stagger">
+    <p class="eyebrow">제출 · <span style="color:var(--ink)">일주일 뒤</span></p>
+    <div class="cols">
+      <div class="card"><div class="card-h">산출물 MD</div><div class="card-b">각자 <strong>본인 레포</strong>에 커밋<br><i>내용은 공유하지 않아도 됩니다</i></div></div>
+      <div class="card hot"><div class="card-h">SKILL.md</div><div class="card-b">팀 <strong>공용 레포에 PR</strong><br><i>서로 리뷰합니다</i></div></div>
+    </div>
+    <h3 style="margin-top:2.4rem"><span class="marked">남이 쓴 프롬프트를 읽으면 내 프롬프트의 문제가 보입니다.<svg viewBox="0 0 200 12" preserveAspectRatio="none"><path d="M2,8 C50,4 104,10 150,5 C172,3 188,7 198,6"/></svg></span></h3>
+    <div class="foot">이번 교육에서 <b>학습 효율이 가장 높은 순간</b>이 상호 리뷰입니다. PR은 꼭 올려주세요.<br><i>※ 개인 레포가 없으시면 private으로 하나 만드시면 됩니다.</i></div>
+  </div>
+  <aside class="notes"><h4>진행 노트</h4><ul>
+    <li><b>정확한 날짜를 여기서 못 박는다.</b> “일주일 뒤”가 아니라 “O월 O일까지”로 말할 것.</li>
+    <li>산출물 자체는 <b>공유 강제하지 않는다</b> — 내용에 부담을 느끼면 아예 안 쓴다. 공유하는 건 <b>스킬</b>이다.</li>
+    <li>리뷰 문화가 약하면 <b>다음 세션 앞부분을 리뷰 시간</b>으로 잡아두는 편이 확실하다.</li>
+    <li>각주를 넘기지 말 것. <b>개인 레포가 없는 사람은 0단계에서 멈춘다.</b></li>
+  </ul></aside>
+</section>
+
+<!-- 25 서로 볼 때 -->
+<section class="slide wide" data-part="PART 3" data-sec="뭘 할 건지">
+  <div class="slide-inner stagger">
+    <p class="eyebrow">서로 볼 때 물어보면 좋은 것 · 점수도, 통과 기준도 없습니다</p>
+    <div class="cols-3">
+      <div class="card"><div class="card-b"><strong>두 번 돌리면<br>어떻게 되나요?</strong></div></div>
+      <div class="card"><div class="card-b"><strong>이 문장, 어디 보면<br>확인할 수 있나요?</strong></div></div>
+      <div class="card"><div class="card-b"><strong>제가 그대로 가져다<br>써도 되나요?</strong></div></div>
+    </div>
+    <div class="foot">문서가 <b>잘 쓰였는지는 보지 않습니다.</b> 서로 이 세 가지만 물어봐 주세요 — <b>답이 막히는 지점이 곧 다음에 손볼 곳</b>입니다.</div>
+  </div>
+  <aside class="notes"><h4>진행 노트</h4><ul>
+    <li>“점수 없다”를 먼저 말할 것. 평가로 느끼는 순간 방어적으로 만들고, 그러면 아무것도 안 배운다.</li>
+    <li><b>요건이 아니라 질문이다.</b> 못 지켰다고 잘못된 게 아니라는 걸 분명히 할 것 — 오늘 숙제는 통과/탈락이 없다.</li>
+    <li>이 세 질문이 각각 <b>4부의 멱등성 · 그라운딩 · 스킬</b>이다. <b>지금은 단어를 꺼내지 말고</b>, 4부에서 “아까 물어보라고 한 게 이겁니다”로 회수하면 세션이 닫힌다.</li>
+  </ul></aside>
+</section>
+
+<!-- 26 막히면 -->
+<section class="slide wide" data-part="PART 3" data-sec="뭘 할 건지">
+  <div class="slide-inner stagger">
+    <p class="eyebrow">막히면</p>
+    <h2>완성하지 못해도<br>가져오세요.</h2>
+    <div class="cols">
+      <div class="card"><div class="card-h">막힌 지점</div><div class="card-b">어디서 안 됐는지 <strong>그 상태 그대로</strong> 가져오면 됩니다.</div></div>
+      <div class="card hot"><div class="card-h">더 좋은 것</div><div class="card-b"><strong>“AI가 이렇게 틀렸다”</strong> 사례.<br>성공 사례보다 배울 게 많습니다.</div></div>
+    </div>
+    <div class="foot">검증 감각은 <b>실패를 봐야</b> 생깁니다. 틀린 결과를 가져오시는 분이 다음 세션의 주인공입니다.</div>
+  </div>
+  <aside class="notes"><h4>진행 노트</h4><ul>
+    <li>이 장이 있으면 <b>“못 했어요”라고 말 못 해서 아예 안 오는</b> 상황이 사라진다.</li>
+    <li>실패 공유를 <b>공식적으로 환영</b>한다고 못 박을 것. 다음 세션 앞부분에 실제로 시간을 배정해두면 신뢰가 생긴다.</li>
+  </ul></aside>
+</section>
+
+<!-- 27 PART 4 표지 -->
+<section class="slide" data-part="PART 4" data-sec="필요한 단어">
+  <div class="slide-inner stagger">
+    <div class="part-label">PART 4</div>
+    <h1>작업에 필요한 단어</h1>
+    <p class="cover-sub">여섯 개를 봅니다. 기준은 하나입니다 — <strong>AI를 쓰면서 실제로 부딪히는가.</strong></p>
+  </div>
+  <aside class="notes"><h4>진행 노트</h4><ul>
+    <li>“쓸 데 없는 용어는 정의만 외우고 사라진다”를 대놓고 말해주면 신뢰가 생긴다.</li>
+    <li>용어마다 <b>정의 → 왜 중요한지 → 아까 그 얘기</b> 순으로 짧게 끊는다.</li>
+    <li>한 세션에 사람이 흡수하는 새 용어는 <b>5~7개가 한계</b>다. 여섯 개로 끊는 이유를 말해줘도 좋다.</li>
+    <li><b>숙제를 이미 들은 상태에서 듣는다.</b> 그래서 각 용어를 <b>3부에서 동작으로만 말했던 것에 이름을 붙이는 식</b>으로 회수하면 가장 잘 붙는다.</li>
+  </ul></aside>
+</section>
+
+<!-- 28 컨텍스트 -->
+<section class="slide wide" data-part="PART 4" data-sec="용어 1/6">
+  <div class="slide-inner stagger">
+    <p class="eyebrow">용어 1</p>
+    <div class="term-head"><div class="term-ko">컨텍스트</div><div class="term-en">context / context window</div></div>
+    <div class="term-def">AI가 <strong>이번 한 번에 볼 수 있는 정보의 총량.</strong> 그리고 그게 전부입니다.</div>
+    <div class="cols">
+      <div class="card"><div class="card-h">착각</div><div class="card-b">“어제 얘기했으니 알겠지”<br>— AI는 <strong>기억하지 않습니다.</strong></div></div>
+      <div class="card hot"><div class="card-h">사실</div><div class="card-b">매번 <strong>처음부터 다시 읽습니다.</strong><br>읽을 게 없으면 지어냅니다.</div></div>
+    </div>
+  </div>
+  <aside class="notes"><h4>진행 노트</h4><ul>
+    <li>말로 덧붙일 것: <b>앞에서 이야기한 “왜 남겨야 하나”의 기술적인 답이 이거다.</b> 내가 남긴 문서가 다음 작업의 컨텍스트가 되고, 안 남기면 매번 0에서 시작한다.</li>
+    <li>2부의 “기억을 믿지 마라”가 <b>사람</b> 얘기였다면, 이건 <b>AI</b>도 똑같다는 얘기다. 대칭이 예쁘게 맞는다.</li>
+    <li>“읽을 게 없으면 지어냅니다”는 뒤의 <b>그라운딩</b>으로 연결되는 복선. 여기서 길게 설명하지 말 것.</li>
+  </ul></aside>
+</section>
+
+<!-- 29 에이전트 -->
+<section class="slide wide" data-part="PART 4" data-sec="용어 2/6">
+  <div class="slide-inner stagger">
+    <p class="eyebrow">용어 2</p>
+    <div class="term-head"><div class="term-ko">에이전트</div><div class="term-en">agent</div></div>
+    <div class="term-def">스스로 <strong>도구를 써서</strong> 관측하고, 판단하고, 다시 관측하는 것.</div>
+    <div class="cols">
+      <div class="card"><div class="card-h">챗봇</div><div class="card-b">내가 붙여넣은 것만 봅니다.<br>내가 옮기고, 내가 확인합니다.</div></div>
+      <div class="card hot"><div class="card-h">에이전트</div><div class="card-b">파일을 열고 · 검색하고 · DB를 확인하고 · 실행해보고<br>결과를 보고 <strong>다시 판단합니다.</strong></div></div>
+    </div>
+  </div>
+  <aside class="notes"><h4>진행 노트</h4><ul>
+    <li>말로 덧붙일 것: <b>오늘 만들 스킬은 직접 커밋 로그를 읽고, 파일을 쓰고, 커밋까지 한다.</b> 붙여넣기는 한 번도 하지 않는다.</li>
+    <li>챗봇 수준에 머문 인원에게 <b>이 장이 가장 중요</b>하다. 말로 설명하면 안 먹히고, 짧게라도 화면을 보여주면 끝난다.</li>
+    <li>여유가 있으면 <b>짧은 즉석 시연</b> — 아무 레포에서 “최근 커밋 5개 요약해줘”를 실행해 도구 호출이 줄줄이 찍히는 걸 보여준다.</li>
+    <li>2부에서 “AI가 어떻게 내 문서를 읽느냐”는 질문이 나왔다면 <b>여기서 회수한다.</b> 3부에서 <b>ChatGPT 웹으로는 숙제가 안 된다</b>고 한 이유도 이 장이다 — “직접 손을 댈 수 있느냐”가 챗봇과 에이전트의 차이다.</li>
+  </ul></aside>
+</section>
+
+<!-- 30 Skill -->
+<section class="slide wide" data-part="PART 4" data-sec="용어 3/6">
+  <div class="slide-inner stagger">
+    <p class="eyebrow">용어 3</p>
+    <div class="term-head"><div class="term-ko">스킬</div><div class="term-en">skill</div></div>
+    <div class="term-def">반복하는 작업 절차를 <strong>이름 붙여 캡슐화한 것.</strong> 지시문 + 필요하면 스크립트.</div>
+    <div class="cols-3">
+      <div class="card"><div class="card-h">없을 때</div><div class="card-b">매번 프롬프트를 새로 씁니다.<br>매번 결과가 다릅니다.</div></div>
+      <div class="card"><div class="card-h">있을 때</div><div class="card-b">한 번 다듬어두고<br>계속 씁니다.</div></div>
+      <div class="card hot"><div class="card-h">그래서</div><div class="card-b">개인의 노하우가<br><strong>재사용 가능한 자산</strong>이 되는 최소 단위입니다.</div></div>
+    </div>
+    <div class="foot">스킬의 값어치는 <b>형식이 같아야 쌓인 게 쓸모가 생기고, 멱등해야 계속 돌릴 수 있다</b>는 데 있습니다.</div>
+  </div>
+  <aside class="notes"><h4>진행 노트</h4><ul>
+    <li>“프롬프트 잘 쓰기”가 아니라 <b>“프롬프트를 두 번 쓰지 않기”</b>가 스킬의 요점이다.</li>
+    <li>2부에서 말한 “의지가 아니라 자동화로 푼다”가 여기서 실물이 된다. 3부에서 물어보라고 한 <b>“제가 그대로 가져다 써도 되나요?”</b>가 이 용어다.</li>
+  </ul></aside>
+</section>
+
+<!-- 31 MCP -->
+<section class="slide wide" data-part="PART 4" data-sec="용어 · 보너스">
+  <div class="slide-inner stagger">
+    <p class="eyebrow">오늘은 이름만 · MCP</p>
+    <h2>스킬은 절차, MCP는 연결.</h2>
+    <div class="cols-3">
+      <div class="card"><div class="card-h">MCP</div><div class="card-b">외부 시스템에 <strong>접근</strong>하는 표준 어댑터.<br><i>DB · 이슈트래커 · 사내 위키</i></div></div>
+      <div class="card"><div class="card-h">Skill</div><div class="card-b">그걸 가지고 <strong>무엇을 어떻게</strong> 할지의 절차.</div></div>
+      <div class="card hot"><div class="card-h">비유</div><div class="card-b">MCP는 <strong>손과 눈</strong><br>Skill은 <strong>작업 표준서</strong></div></div>
+    </div>
+    <div class="foot">오늘은 여기까지입니다. <b>우리 사내 DB와 이슈트래커에 실제로 붙일 때</b> 권한·보안까지 묶어서 제대로 다룹니다.</div>
+  </div>
+  <aside class="notes"><h4>진행 노트</h4><ul>
+    <li><b>MCP를 스킬과 같은 무게로 다루면 둘 다 흐려진다.</b> 오늘 손으로 안 쓰면 안 남는다. 한 장에서 끊는다.</li>
+    <li>“왜 지금 안 하냐”는 질문이 나오면: <b>사내 시스템에 붙이는 순간 권한과 보안이 따라오는데, 그건 따로 시간을 잡아야 한다.</b></li>
+  </ul></aside>
+</section>
+
+<!-- 32 멱등성 -->
+<section class="slide wide" data-part="PART 4" data-sec="용어 4/6">
+  <div class="slide-inner stagger">
+    <p class="eyebrow">용어 4</p>
+    <div class="term-head"><div class="term-ko">멱등성</div><div class="term-en">idempotency</div></div>
+    <div class="term-def">몇 번을 실행해도 <strong>결과가 같은 성질.</strong></div>
+    <div class="cols">
+      <div class="card"><div class="card-h">멱등하지 않은 스킬</div><div class="card-b">돌릴 때마다<br><i>recap.md · recap-1.md · recap-2.md · recap-final.md</i></div></div>
+      <div class="card hot"><div class="card-h">멱등한 스킬</div><div class="card-b">몇 번을 돌려도<br><strong>오늘 파일 하나가 최신 상태로 갱신됩니다.</strong></div></div>
+    </div>
+    <div class="foot"><b>자동화는 반드시 여러 번 돌아갑니다.</b> 두 번 돌려서 망가지면 그건 자동화가 아니라 시한폭탄입니다.</div>
+  </div>
+  <aside class="notes"><h4>진행 노트</h4><ul>
+    <li>말로 덧붙일 것: 3부에서 물어보라고 한 <b>“두 번 돌리면 어떻게 되나요?”</b>가 이 용어다. <b>요건은 아니지만</b>, 같은 날 두 번 돌려서 중복 파일이 생기면 그 스킬은 결국 안 쓰게 된다.</li>
+    <li>2부의 <b>“어차피 금방 낡아요”</b> 반론에 대한 답이 이 장이다. 쓰는 게 아니라 <b>재생성</b>한다.</li>
+    <li>파일명 예시(<code>recap-final.md</code>)에서 웃음이 나온다. 다들 해봤기 때문.</li>
+    <li>멱등성은 개발자에게 이미 익숙한 개념(HTTP PUT, 배포 스크립트)이다. <b>“새 개념이 아니라 아는 개념을 여기 쓰는 것”</b>으로 말하면 진입장벽이 사라진다.</li>
+  </ul></aside>
+</section>
+
+<!-- 33 그라운딩 -->
+<section class="slide wide" data-part="PART 4" data-sec="용어 5/6">
+  <div class="slide-inner stagger">
+    <p class="eyebrow">용어 5</p>
+    <div class="term-head"><div class="term-ko">그라운딩</div><div class="term-en">grounding / hallucination</div></div>
+    <div class="term-def">AI의 주장을 <strong>실제 근거에 묶어두는 것.</strong> 묶여 있지 않으면 그럴듯하게 지어냅니다.</div>
+    <p>지어낸 문장은 <strong>문법적으로 완벽하고 자신감이 넘칩니다.</strong> 그래서 더 위험합니다. 검증하지 않은 산출물이 쌓이면 자산이 아니라 부채가 됩니다.</p>
+    <div class="foot">규칙 한 줄로 정리하면 — <b>출처 없는 문장은 자산이 아니라 부채입니다.</b></div>
+  </div>
+  <aside class="notes"><h4>진행 노트</h4><ul>
+    <li>말로 덧붙일 것: 3부에서 물어보라고 한 <b>“이 문장, 어디 보면 확인할 수 있나요?”</b>가 이 용어다. 커밋 해시·파일 경로·테이블명 — 틀려도 <b>5초 만에 확인 가능한 상태</b>로 만드는 게 목적이다.</li>
+    <li>여기서 <b>“AI 못 믿겠다”는 사람에게 줄 답</b>이 나온다. 필요한 건 AI를 믿는 게 아니라 <b>검증을 싸게 만드는 것</b>이다.</li>
+    <li>“검증 비용이 생성 비용보다 싸면 AI는 쓸 만하다”로 정리해도 좋다.</li>
+    <li>1부에서 인정했던 “AI로 짜면 이해 없이 통과한다”의 실무적 방어책이 이것이다.</li>
+  </ul></aside>
+</section>
+
+<!-- 34 온톨로지 -->
+<section class="slide wide" data-part="PART 4" data-sec="용어 6/6">
+  <div class="slide-inner stagger">
+    <p class="eyebrow">용어 6 · 오늘은 목적지만 봅니다</p>
+    <div class="term-head"><div class="term-ko">온톨로지</div><div class="term-en">ontology</div></div>
+    <div class="term-def">개념과 개념 <strong>사이의 관계</strong>를, 기계가 따라갈 수 있게 정의해둔 것.</div>
+    <div class="spectrum">
+      <div class="sp now"><div class="sp-flag">지금 여기</div><div class="sp-t">용어집</div><div class="sp-d">말의 뜻을 적는다</div></div>
+      <div class="sp"><div class="sp-t">분류체계</div><div class="sp-d">종류별로 묶는다</div></div>
+      <div class="sp"><div class="sp-t">온톨로지</div><div class="sp-d">관계를 정의한다</div></div>
+      <div class="sp"><div class="sp-t">지식그래프</div><div class="sp-d">실제 데이터까지 얹는다</div></div>
+    </div>
+    <div class="foot">지금 우리는 <b>맨 왼쪽 칸</b>에 있습니다. 오늘은 여기까지만 알면 충분합니다.</div>
+  </div>
+  <aside class="notes"><h4>진행 노트</h4><ul>
+    <li>말로 덧붙일 것: <b>여러분이 이번 주에 쌓을 문서 한 장 한 장이 씨앗이다.</b> 지금은 형식도 제각각이지만, 실물이 쌓여야 두 번째 칸으로 갈 수 있다 — <b>그래서 오늘 서식을 정하지 않았다.</b></li>
+    <li><b>절대 깊이 들어가지 말 것.</b> 오늘은 “우리가 어디로 가는지”만 보여주는 장이다.</li>
+    <li>온톨로지를 먼저 설계하고 시작하면 거의 항상 실패한다 — <b>아무도 안 채우는 스키마를 몇 주 논쟁하다 끝난다.</b> 그래서 우리는 쌓는 것부터 한다.</li>
+    <li>“어떤 스키마가 맞는지는 산출물이 좀 쌓여봐야 안다”가 이 순서의 근거다.</li>
+  </ul></aside>
+</section>
+
+<!-- 35 클로징 1 -->
+<section class="slide" data-part="PART 5" data-sec="마무리">
+  <div class="slide-inner stagger">
+    <h1>정리하는 사람이 아니라<br>정리<span class="marked">되게 만드는 사람<svg viewBox="0 0 200 12" preserveAspectRatio="none"><path d="M3,8 C48,2 96,11 142,5 C168,2 186,7 197,5"/></svg></span></h1>
+    <p class="cover-sub">오늘 <strong>왜</strong>와 <strong>어떻게</strong>를 봤습니다.<br>이제 각자 하나씩 만들어 오시면 됩니다.</p>
+  </div>
+  <aside class="notes"><h4>진행 노트</h4><ul>
+    <li>오늘의 전환을 한 문장으로 압축하는 장. <b>의지 → 구조.</b></li>
+  </ul></aside>
+</section>
+
+<!-- 36 클로징 2 -->
+<section class="slide cover" data-part="PART 5" data-sec="마무리">
+  <div class="slide-inner stagger">
+    <h1>기억은 지워지는 게 아니라<br>조용히 <span class="marked">바뀝니다<svg viewBox="0 0 200 12" preserveAspectRatio="none"><path d="M3,8 C48,2 96,11 142,5 C168,2 186,7 197,5"/></svg></span></h1>
+    <p class="cover-sub">코드에도, AI에게도 그 ‘왜’는 남아 있지 않습니다.</p>
+    <p class="attrib">다음 세션 · 일주일 뒤 — 숙제 리뷰, 그리고 쌓인 것을 어떻게 묶을 것인가</p>
+  </div>
+  <aside class="notes"><h4>진행 노트</h4><ul>
+    <li>표지와 <b>완전히 같은 문장</b>. 사람들이 가져가는 건 이 한 문장이다.</li>
+    <li>다음 세션 예고에서 <b>“쌓인 것을 묶는다”</b>가 곧 온톨로지다. 단어는 여기서 안 써도 된다.</li>
+    <li>질문을 받되, 오늘 안 다룬 용어(RAG · eval · 지식그래프 등)에 대한 질문은 <b>“그 회차에”</b>로 넘긴다.</li>
+  </ul></aside>
+</section>
+
+</main>
+
+<script>
+(function(){
+  var slides = Array.prototype.slice.call(document.querySelectorAll(".slide"));
+  var i = 0;
+  var railNo = document.getElementById("railNo");
+  var railTot = document.getElementById("railTot");
+  var partName = document.getElementById("partName");
+  var secName = document.getElementById("secName");
+  var prog = document.getElementById("prog");
+  function pad(n){ return (n < 10 ? "0" : "") + n; }
+
+  railTot.textContent = "/" + pad(slides.length);
+
+  function show(n){
+    n = Math.max(0, Math.min(slides.length - 1, n));
+    slides[i].classList.remove("is-active");
+    i = n;
+    slides[i].classList.add("is-active");
+    railNo.textContent = pad(i + 1);
+    partName.textContent = slides[i].getAttribute("data-part");
+    secName.textContent = slides[i].getAttribute("data-sec");
+    prog.style.width = ((i + 1) / slides.length * 100) + "%";
+    if (location.hash !== "#" + (i + 1)) {
+      try { history.replaceState(null, "", "#" + (i + 1)); } catch (err) {}
+    }
+  }
+
+  document.addEventListener("keydown", function(e){
+    if (e.key === "ArrowRight" || e.key === "PageDown" || e.key === " ") { e.preventDefault(); show(i + 1); }
+    else if (e.key === "ArrowLeft" || e.key === "PageUp") { e.preventDefault(); show(i - 1); }
+    else if (e.key === "Home") { e.preventDefault(); show(0); }
+    else if (e.key === "End") { e.preventDefault(); show(slides.length - 1); }
+    else if (e.key === "n" || e.key === "N" || e.key === "ㅜ") { document.body.classList.toggle("notes-on"); }
+  });
+
+  document.addEventListener("click", function(e){
+    if (e.target.closest(".notes") || e.target.closest(".block")) return;
+    show(e.clientX < window.innerWidth * 0.28 ? i - 1 : i + 1);
+  });
+
+  var startX = null;
+  document.addEventListener("touchstart", function(e){ startX = e.touches[0].clientX; }, {passive:true});
+  document.addEventListener("touchend", function(e){
+    if (startX === null) return;
+    var dx = e.changedTouches[0].clientX - startX;
+    if (Math.abs(dx) > 50) show(dx < 0 ? i + 1 : i - 1);
+    startX = null;
+  }, {passive:true});
+
+  var h = parseInt(location.hash.slice(1), 10);
+  show(isNaN(h) ? 0 : h - 1);
+})();
+</script>
