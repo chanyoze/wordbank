@@ -97,6 +97,16 @@ function DeadlineBlock({items}) {
                 ) : (
                   <span className={styles.todoText}>{label}</span>
                 )}
+                {t.doc && (
+                  <a
+                    className={styles.docLink}
+                    href={t.doc}
+                    target="_blank"
+                    rel="noreferrer"
+                    title="📄 참고 문서 열기">
+                    📄
+                  </a>
+                )}
               </li>
             );
           })

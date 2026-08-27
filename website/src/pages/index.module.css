@@ -204,6 +204,22 @@
   color: var(--til-amber);
 }
 
+/* 마감 항목에 붙는 참고 문서 링크 (todos.json 의 doc 필드) */
+.docLink {
+  flex: none;
+  margin-left: 6px;
+  font-size: 0.85rem;
+  line-height: 1;
+  text-decoration: none;
+  opacity: 0.55;
+  transition: opacity 0.15s ease;
+}
+
+.docLink:hover {
+  opacity: 1;
+  text-decoration: none;
+}
+
 /* 반응형: 좁은 화면에서는 위아래로 적층, 가운데 정렬 */
 @media (max-width: 900px) {
   .heroInner {

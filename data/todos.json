@@ -1,8 +1,15 @@
 {
-  "updated": "2026-08-19",
+  "updated": "2026-08-27",
   "week": [],
   "today": [
     { "text": "모의 면접 준비 — Claude가 면접관 역할로 Q 던지고 꼬리질문까지", "done": false }
   ],
-  "deadlines": []
+  "deadlines": [
+    {
+      "text": "최초위험성평가 — 백업 스키마 동기화 · 대량삭제 원인 확인",
+      "due": "2026-09-22",
+      "done": false,
+      "doc": "https://github.com/chanyoze/RAW-DOC/blob/main/raw/notes/fst-assmnt-backup-and-delete-issues.md"
+    }
+  ]
 }
