@@ -1,9 +1,27 @@
+---
+title: "상시·수시위험성평가 SCNT 표준승인 — 구현 방식 공유"
+sidebar_label: "설계 의도 · 소급유지 배경"
+sidebar_position: 1
+date: 2026-08-26
+kind: 갱신
+raw: "RAW-DOC:cip-defg-saas/OTAT/현행/SCNT_구현방식_공유.md"
+---
+
 # 상시·수시위험성평가 SCNT 표준승인 — 구현 방식 공유
 
 > **마일스톤**: [ATMS26-012] 한화오션(주) 상시·수시위험성평가 승인모듈 기능 추가
 > **작성**: 2026-07-20 / 이찬호
 > **목적**: 구현 방향 설명용. 대면 설명 전에 훑어보시면 됩니다.
 > **상세 스펙**: [SCNT_표준승인_도입계획.md](../설계아카이브/발표자료/SCNT_표준승인_도입계획.md) (결정 D1~D11 원본)
+
+---
+
+> ⚠️ **이 문서는 2026-08-26 기준이다.**
+> 08-27 이후의 결정(승인전환 버튼 · 접수 흐름 복귀 · 접수완료 전환 허용 · 제출자 기반 요청자 · 삭제 시 승인건 정리)은 여기에 없다.
+> **현재 동작의 정본은 [TO-BE/승인_현재동작.md](../TO-BE/승인_현재동작.md)** 이다.
+>
+> 여기에 다시 옮겨 적지 않는다 — 같은 사실을 두 곳에 두면 각자 늙는다.
+> 이 문서는 **설계 의도와 배경**(왜 옵션으로 두 엔진을 가르는가, 소급유지를 왜 하는가)을 담는 자리로 둔다.
 
 ---
 
@@ -117,8 +135,7 @@ scwin.fnIsLegacyApprvRow = function(anRowIdx) {
 
 | 상태 | 언제 |
 |---|---|
-| 작성중 | 아직 승인라인을 만들지 않음 |
-| 요청대기 | 승인라인은 저장했고, 승인요청 전 |
+| 요청대기 | 승인요청 전 (승인라인 유무와 무관) |
 | 승인대기 | 승인요청함 |
 | 승인중 | 결재가 중간 단계까지 진행됨 |
 | 승인반려 | 반려됨 |
@@ -128,6 +145,86 @@ scwin.fnIsLegacyApprvRow = function(anRowIdx) {
 
 상태 컬럼 옆에 **단계 / 대기자** 두 컬럼이 추가되어, 지금 몇 단계이고 누구 차례인지가 목록에서 바로 보입니다.
 (기존 결재 회차는 이 두 칸이 비어 있습니다)
+
+### 상태명 · 궤도 판정 → [승인_현재동작.md](../TO-BE/승인_현재동작.md)
+
+여기 있던 **세 가지 옵션 상태별 상태명 전환 매트릭스**(2026-08-21)를 뺐다. 🟢 갱신형이라 이 문서에 있을 자리가 아니다.
+
+> ⚠️ **그 표에는 폐기된 동작이 남아 있었다.** *"무라인 · 원청 직접작성 → `요청대기`"* 로 적혀 있었는데,
+> 그 분기는 폐기됐다(명세 §5). 지금은 승인건이 있어야 `요청대기` 이고, 승인건 없는 원청 작성분은 `접수` 다.
+> **08-26 이후 이 문서가 갱신되지 않는 동안 표가 조용히 틀려 있었다.**
+
+C(원청 직접작성)와 D(협력 제출)를 가르는 **판별 방법**은 설계 배경이라 아래에 남긴다 — 제출자 컬럼(`SUB_USER_NO`)이 왜 필요했는가.
+
+---
+
+#### C 와 D 를 가르는 이유 (2026-08-21 추가)
+
+> ⚠️ **이 절의 정책은 대체 예정이다.** 2026-08-23 공유 결정으로 접수상태 회차는 소급유지 대신
+> **승인단계를 생성해 승인 궤도로 편입**한다(협력 제출본 → `승인대기` / 원청 작성본 → `요청대기`).
+> 명세: [TO-BE/승인상태_전환명세.md](../TO-BE/승인상태_전환명세.md) §3-3.
+> 아래 판별 방법(§4-3 백필 근거)은 그대로 쓰이므로 남겨 둔다.
+
+둘 다 `STTS_CD` 10/20 에 승인라인이 없는, 겉보기엔 같은 회차다. 그런데 **어떻게 만들어졌는지가 다르다.**
+
+- **C — 원청이 접수화면에서 직접 만든 회차.** 이후 아무 프로세스도 진행된 적이 없다. 승인요청을 열어줘도 잃을 이력이 없다.
+- **D — 협력사가 제출해서 원청 목록에 올라온 회차.** 승인요청 프로세스를 거쳐 올라온 게 아니다. 여기에 승인요청을 열면 *적법하게 제출되지 않은 건*이 승인 파이프라인에 들어간다.
+
+그래서 **C 만 `요청대기` 로 열고, D 는 접수/미접수 그대로 둔다.**
+
+##### 판별 방법 — 전용 컬럼이 없다
+
+두 생성 경로가 테이블에 **같은 모양**을 남긴다. 판별에 쓸 수 있는 컬럼이 없다는 뜻이다.
+
+| | 협력 제출 (`trscSub`) | 원청 직접작성 (`insertAsmt`) |
+|---|---|---|
+| `TSF_ASSMNT_RECEIVE` | Merge | Insert |
+| `TSF_ASSMNT_REGIS` | 협력이 미리 작성 | **같은 트랜잭션에서 함께 Insert** |
+| `CHECK_TF` | 제출 시 `'T'` | `#{RCPT_TF}` — 접수하면 `'T'` |
+| `CRTUSERNO` | 협력사 사용자 | 원청 사용자 |
+
+`REGIS` 유무도 `CHECK_TF` 도 못 쓴다(실측: `REGIS` 있음이 365k 중 364k, `REGIS.CHECK_TF='T'` 도 364k).
+남는 신호는 **최초생성자 소속**뿐이라 이걸로 판별한다.
+
+```sql
+(Select Max('T') From TCC_EMPLOYE x Where 1 = 1 And x.USER_NO = a.CRTUSERNO And x.COMPANY_ID = a.R_COMPANY_ID) COOP_CRT_TF,
+(Select Max('T') From TCC_EMPLOYE x Where 1 = 1 And x.USER_NO = a.CRTUSERNO And x.COMPANY_ID = a.COMPANY_ID) RCPT_CRT_TF
+```
+
+> Oracle 은 `Select` 절에서 `Exists` 를 못 쓴다. 스칼라 서브쿼리 형태여야 한다.
+
+**교차검증** — 원청 경로는 RECEIVE·REGIS 를 한 트랜잭션에서 만들어 `CRTDATE` 가 같고, 협력 경로는 작성과 제출 시점이 벌어진다. 이 독립 신호가 위 판별과 일치한다.
+
+| `CRTDATE` 관계 | 협력 | 원청 | 판별불가 |
+|---|---|---|---|
+| RECEIVE 가 나중 (제출 패턴) | **313,589** | 468 | 3,293 |
+| 동시생성 5초 이내 (한 트랜잭션) | 22,700 | **24,452** | 469 |
+
+원청의 98%가 동시생성, 협력의 93%가 시점 차이 — 서로 다른 두 신호가 같은 방향을 가리킨다.
+
+**판별불가 처리**: 생성자가 `Null`(2,761건)이거나 사용자 정보가 없는 건(639+368건)은 **D(협력)로 떨어져 소급유지**된다.
+잘못 열어서 부적합한 회차가 승인 파이프라인에 들어가는 것보다 안전한 쪽이다.
+
+##### 화면도 같은 규칙을 써야 한다
+
+`fnIsScntRow` 가 승인 팝업 링크·편집잠금·컬럼표시를 지배하므로, SQL 의 상태명과 규칙이 어긋나면 **"접수인데 승인 팝업이 열리는"** 상태가 된다.
+
+```js
+// 그 외(요청 전·접수 등, 결재 실적 0건)는 승인 모듈 현장이면서 원청이 직접 만든 회차만 승인 모듈.
+return scwin.oOptConfig.bUseOpt060003 === true && wdlAsmt.getCellData(anRowIdx, "RCPT_DRCT_TF") === "T";
+```
+
+##### 추후 데이터는 컬럼으로 해결한다 (미착수)
+
+`CRTUSERNO` 는 원래 이 용도의 컬럼이 아니다. `TSF_ASSMNT_RECIVE_CONST_CMT.REG_COMPANY_ID`(작성자 회사ID) 선례가 같은 스키마에 있으므로, `TSF_ASSMNT_RECEIVE` 에도 같은 컬럼을 두면 신규 데이터는 조회 없이 확정된다.
+
+| 경로 | 넣을 값 |
+|---|---|
+| `insertAsmt` (원청) | `#{COMPANY_ID}` |
+| `trscSub` (협력) | `#{COOP_COMPANY_ID}` |
+| 소급분 백필 | `CRTUSERNO` 소속 기준 1회 `Update` (위 판별식과 동일 규칙) |
+
+---
 
 ### ⚠️ 전환 시 안내 필요 — 옵션을 켜는 순간 기존 건의 **상태명이 정정된다**
 
@@ -204,7 +301,7 @@ scwin.fnIsLegacyApprvRow = function(anRowIdx) {
 
 | 코드 | 표시명(공통코드 `SANCTN_STS_CODE`) |
 |---|---|
-| `REG` | 작성중 |
+| `REG` | 작성중 → **화면에는 `요청대기` 로 표시**(§2.5 통일 규칙, 공통코드 자체는 그대로) |
 | `DEM` | 승인대기 |
 | `PROG` | 승인중 |
 | `REJ` | 승인반려 |
@@ -310,11 +407,11 @@ STTS_CD=50 & 현장소장 → APPRV_CMT
 | **외곽 승인 컬럼** | 상태 통합 + 단계·대기자 2컬럼 + 벌크 병합(BE) |
 | **소급 유지** | §2.5 — 회차 단위 판별로 상태 표시·승인 버튼 모두 적용 완료 |
 | **종합의견 승인요청 게이트** | §5 — `092=T && 060_002=T`이면 승인요청 시 종합의견 필수(FE, 레거시 동형). 문구 "공사팀·안전팀 종합의견을 모두 입력해야 승인요청할 수 있습니다." |
-| **핸들러 CFM_* 역기록** | `SfasAtRiskasmtSanctionHandler` — onDemandCreated(REG)·onActionApplied(승인/반려/취소) → writeCfmCache → RECEIVE·REGIS 양 테이블 `CFM_STS_CODE` 갱신 = 상태 전이 동작함. (부수 훅 validateBeforeDemand·canView·onStatusLoaded는 미완 TODO) |
+| **핸들러 CFM_* 역기록** | `SfasAtRiskasmtSanctionHandler` — onDemandCreated(REG)·onActionApplied(승인/반려/취소) → writeCfmCache → RECEIVE·REGIS 양 테이블 `CFM_STS_CODE` 갱신 = 상태 전이 동작함. (`canView`·`onStatusLoaded` 는 **default 유지 확정** — 아래 §확정됨. `validateBeforeDemand` 만 빈 스텁이고 §7-8 로 시점이 재정의됐다) |
 | **현장소장의견 혼용 대응** | `APPRV_CMT` 표시를 presence 기반으로(`060 \|\| bHasLegacy`) — SCNT 전용 현장이면 **숨김**, 레거시 회차 있으면 **표시**. 추가로 **SCNT 행은 편집 차단**(`fnIsScntRow(nIdx) \|\|` readonly). `bHasLegacy`는 wdlMain 로드 시 계산→`columnVisibleControl` 재실행. 상세 [옵션전수 §8.1](../TO-BE/SfasRcpt_옵션전수_화면제어.md) |
 | **라벨 통일** | 외곽 그리드 헤더를 팝업 기준으로 통일 — "공사팀/안전팀 **종합의견**"(기존 "공사팀/안전팀 의견") |
 | **문서 체계** | `docs/OTAT` 재편(현행/TO-BE/설계아카이브, README 단일 인덱스) + **[옵션전수 화면제어](../TO-BE/SfasRcpt_옵션전수_화면제어.md) 신규** — 전체 옵션 → 컬럼표시/편집/필수/그리드숨김 전수 + 마스터 잠금게이트(EDIT_TF) 정리 |
-| **승인 팝업 상태 판정 정정** | `SfasPopRegRiskAssessmentConfirmSql.selectAsmnt` STATUS Case.<br>**문제**: `미접수`(CHECK_TF='F') 를 `작성중` 보다 **먼저** 판정해, **승인라인 미생성(무라인) SCNT 회차가 팝업에서 '미접수'로 오표시**(외곽 목록은 '작성중') — `CHECK_TF` 는 레거시 전용 개념인데 SCNT 판별에 쓰인 게 원인.<br>**조치**: 팝업은 외곽 `fnIsScntRow` 게이트로 **SCNT 회차만 진입**하므로 **SCNT 전용으로 최소화**(CFM_* 3분기 + `Else '작성중'`). 도달 불가한 레거시(STTS_CD 30~60)·접수/미접수 분기는 **두지 않음** — **소급 판별은 외곽 `selectLstMain` 단일 소유**로 유지(로직 이원화 시 규칙 변경 때 두 곳을 고쳐야 해 드리프트 위험) |
+| **승인 팝업 상태 판정 정정** | `SfasPopRegRiskAssessmentConfirmSql.selectAsmt` STATUS Case.<br>**문제**: `미접수`(CHECK_TF='F') 를 `작성중` 보다 **먼저** 판정해, **승인라인 미생성(무라인) SCNT 회차가 팝업에서 '미접수'로 오표시**(외곽 목록은 '작성중') — `CHECK_TF` 는 레거시 전용 개념인데 SCNT 판별에 쓰인 게 원인.<br>**조치**: 팝업은 외곽 `fnIsScntRow` 게이트로 **SCNT 회차만 진입**하므로 **SCNT 전용으로 최소화**(CFM_* 3분기 + `Else '작성중'`). 도달 불가한 레거시(STTS_CD 30~60)·접수/미접수 분기는 **두지 않음** — **소급 판별은 외곽 `selectLstMain` 단일 소유**로 유지(로직 이원화 시 규칙 변경 때 두 곳을 고쳐야 해 드리프트 위험) |
 | **승인 미사용 현장 레거시 원복** (2026-07-28) | **회귀 수정**: SCNT 재작성이 STATUS·EDIT_TF 에서 `060='T'` 가드를 없애면서 승인 아예 안 쓰는 현장(`060=F && 060_003=F`)의 레거시 잔여 회차(STTS 30~60)까지 승인상태명·잠금이 되살아난 것.<br>**조치**: [selectLstMain](../../src/main/resources/sqlmap/mappers/sfas/SfasRegAtRiskasmtRcptSql.xml) STATUS·EDIT_TF 레거시 분기에 **`(060='T' Or 060_003='T')` 가드 복원** → 승인엔진 하나라도 켜진 현장만 레거시 상태/잠금, 둘 다 F면 접수·편집가능으로 롤백. CFM(SCNT) 분기는 무가드(소급유지 유지).<br>**규칙**: 사용안함↔060=T 는 레거시 즉시반영(소급유지 아님), 060↔060_003·사용안함↔060_003 은 소급유지.<br>**DB 검증**: HT0001 STTS 40~60 전부 '접수', 060_003=T·060=T 현장 무영향. 전수감사 결과 깨진 곳은 STATUS·EDIT_TF 둘뿐. 상세 [§F-2](../TO-BE/SfasRcpt_옵션060_영향목록.md#L159) |
 | **코드 검수·리팩토링 2회차** (2026-07-24) | 공통 wframe 2개(Grid·Button) 검수.<br>①[CommonWFrameSanctnButton](../../src/main/webapp/wqxml/common/CommonWFrameSanctnButton.xml) 미저장 안내 문구가 *"저장하지 않고 진행하시겠습니까?"*(예/아니오 질문)인데 `msg.warn`+무조건 `return`이라 답할 수 없던 것 → 평서문 *"먼저 저장하신 후 다시 진행하세요."* 로 정정 ②[cips_sanction.js](../../src/main/webapp/js/sanction/cips_sanction.js) 죽은 코드 `applyFlags`·`applyLabels`·`_setVisible` **삭제** — git 추적 결과 2026-07-12 "임시 커밋"에서 버튼 wframe 자체 구현(`fnApplyFlags`)과 **동시 추가된 투기적 부산물**(설계본 예시구현엔 없음, 호출 0건). 버튼 노출/라벨은 wframe 소유가 설계 의도라 라이브러리 버전 제거 ③`changeLine`은 설계본부터 있던 **계획 기능**(승인라인 변경 UI, BE 완비·FE 미배선)이라 존치 + 미배선 TODO 주석 ④Grid 헤더 `최종</br>단계` 무효태그 → `<br/>` |
 | **코드 검수·리팩토링 1회차** (2026-07-24) | SCNT 관련 18파일 전수 검수 후 **동작 변화 없는 정리**만 반영.<br>①[CommonSanctionBridgeServiceImpl](../../src/main/java/com/cip/defg/saas/module/common/service/impl/CommonSanctionBridgeServiceImpl.java) — `stampRequesterOnDemStep` 의 javadoc(코어 `-20009` 회피 근거)이 `stampDemSnOnSteps` 위에 잘못 붙어 있던 것 정정 ②[SfasRegAtRiskasmtRcptServiceImpl](../../src/main/java/com/cip/defg/saas/module/sfas/service/impl/SfasRegAtRiskasmtRcptServiceImpl.java) `mergeScntStepInfo` 중복제거를 `List.contains`(O(n²)) → `Set.add`(O(1)) ③[cips_sanction.js](../../src/main/webapp/js/sanction/cips_sanction.js) payload 조립 7곳 중복 → `_payload` 단일화, `save`/`update` 본문 동일 → `_saveDemand` 통합, `loadStatus` 만 직접 호출하던 `executeSubmissionDynamic` → `_submit` 흡수(`target` 옵션 추가)로 **전송 경로 1곳으로 축소**, 1회용 전역 콜백(`__cipsSanctionOpinionCb`·`__cipsSanctionCancelCb`) 사용 후 회수 ④파일 주석 변경이력 3건 갱신(표준 B항)<br>※ **미채택**: 핸들러의 빈 오버라이드 3개(seam 표시 의도로 존치), `applyAction`/`cancel` 의 핸들러 검증 시점(트랜잭션 롤백 대상이라 정합 문제 없음) |
@@ -333,8 +430,8 @@ STTS_CD=50 & 현장소장 → APPRV_CMT
 | 4 | `092=T && 060_002=T`, 종합의견 비운 채 승인요청 | **"공사팀·안전팀 종합의견을 모두 입력해야 승인요청할 수 있습니다."** 로 차단 |
 | 5 | `060_002=F`(또는 092=F) | 종합의견 비어도 승인요청 통과 |
 | 6 | 헤더 라벨 | 외곽·팝업 모두 "공사팀/안전팀 종합의견" |
-| 7 | **승인라인 만들기 전(무라인) SCNT 회차**로 팝업 열기 | 팝업 상태가 **'작성중'** (기존엔 '미접수'로 오표시) — 외곽 목록 상태와 일치해야 함 |
-| 8 | **SCNT 현장에서 평가서 추가** (저장 전) | 상태가 바로 **'작성중'** (기존엔 '접수') — 저장·재조회 후에도 동일 유지 |
+| 7 | **승인라인 만들기 전(무라인) SCNT 회차**로 팝업 열기 | 팝업 상태가 **'요청대기'** (기존엔 '미접수'로 오표시, 이후 '작성중') — 외곽 목록 상태와 일치해야 함 |
+| 8 | **SCNT 현장에서 평가서 추가** (저장 전) | 상태가 바로 **'요청대기'** (기존엔 '접수', 이후 '작성중') — 저장·재조회 후에도 동일 유지 |
 | 9 | **SCNT 승인요청(DEM) 상태**에서 하위 항목 추가·삽입 / 삭제 / 순서변경 / 일괄수정 시도 | 4가지 모두 **차단** + *"승인 진행 중(단계: … / 대기자: …)에는 평가서를 수정할 수 없습니다."* |
 | 10 | 위 상태에서 **승인요청 취소**(→ REG) 후 재시도 | 4가지 모두 **다시 허용** |
 | 11 | **레거시(060) 회차** 승인 진행 중 동일 시도 | 기존 문구(*"지정된 안전팀장(…)과 현장소장(…)만 평가서 수정이 가능합니다."*) **회귀 없음** |
@@ -348,10 +445,11 @@ STTS_CD=50 & 현장소장 → APPRV_CMT
 | # | 작업 | 비고 |
 |---|---|---|
 | ~~-~~ | ~~USETGT 등록 · 승인라인 정의~~ | ✅ **완료** — 이미 프로비저닝(전 현장 4단계 기본라인 `LINE_SN 463`) |
-| ~~-~~ | ~~§7 항목별 검토의견 FE 게이트~~ | ✅ **완료(2026-07-28)** — 팝업 `fnValidatePerItemCmt`. 런타임 미검증 |
-| 1 | 협력사 화면(`SfasRegAtRiskasmtSub`) SCNT 배선 | [TODO_협력화면_SCNT배선](../TO-BE/TODO_협력화면_SCNT배선.md) |
-| 2 | 다른 메뉴 조회/가져오기 화면 SCNT 대응 확인 | 접수화면 외 SCNT 회차 오표시 점검(F-2 파급) |
-| 3 | **옵션 admin + SQL 일괄수정** | §2.2 — **최대 리스크**(15~20파일). **맨 마지막** |
+| ~~-~~ | ~~§7 항목별 검토의견 FE 게이트~~ | ⚠️ **결정이 번복됐고 이행됐다** — 요청 시점 FE 게이트는 **철거**, [명세 §7-8](../TO-BE/승인상태_전환명세.md) 대로 최종 승인 시점 BE 게이트로 대체(2026-09-02). 아래 상세는 명세 §7-8-2 |
+| ~~-~~ | ~~협력사 화면(`SfasRegAtRiskasmtSub`) SCNT 배선~~ | ✅ **완료(2026-09-02 대조)** — [TODO_협력화면_SCNT배선](../TO-BE/TODO_협력화면_SCNT배선.md) §4·§8. 실동작 검증만 남음 |
+| ~~-~~ | ~~검토의견 게이트 시점 통일~~ | ✅ **완료(2026-09-02)** — `validateBeforeComplete` 신설 + 공통 훅 5종 보강. **차단 동작 런타임 확인됨**(롤백·회귀는 [S3-4](../종합테스트_시나리오.md) 잔여) |
+| 2 | 다른 메뉴 조회/가져오기 화면 SCNT 대응 확인 | C-1·C-2 공통 조치는 구현됨. **회귀 확인 미완** — [승인모듈_영향메뉴_조치목록](../TO-BE/승인모듈_영향메뉴_조치목록.md) §3 |
+| 3 | **옵션 admin + SQL 일괄수정** | §2.2 — **최대 리스크**(15~20파일). 옵션 관리 화면 4종에 `060_003` 이 아직 **0건**(조치목록 §4-4). **운영 배포 전 필수** |
 
 ---
 
@@ -381,7 +479,9 @@ STTS_CD=50 & 현장소장 → APPRV_CMT
   - **`060_001` granularity 존중** (BE `trscCmtCont` 확인): **'A'=검증 안 함 / 'B'=전 항목 필수 / 'C'=중점 항목(`PRIORITY='O'`)만 필수**(비중점 면제). SCNT 게이트도 이 값 그대로 반영 — 조건 `(060_001 != 'C' Or PRIORITY = 'O')`.
   - **변형2 미채택**: "승인완료 직전 차단"은 레거시(검토하며 작성)에 더 가깝지만, "최종 단계 판별 + 완료시점 차단" 배선이 복잡하고 종합의견과 타이밍이 갈려 UX 불일치. SCNT 승인자가 회사·현장마다 달라 실무 일반화 불가 → 단순·명확한 변형1로 통일.
   - **차이**: 레거시는 승인자가 승인 중 작성 → SCNT는 작성자/검토자가 **승인요청 전 미리** 작성(종합의견과 동일 방식).
-  - 실데이터: SCNT 두 현장(A0001·GC001) 다 092=T(종합의견)라 이 경로는 아직 미발현. 092=F+060_003=T 조합 시 발현.
+  - ~~실데이터: SCNT 두 현장(A0001·GC001) 다 092=T(종합의견)라 이 경로는 아직 미발현.~~
+    ⚠️ **뒤집혔다 (2026-09-02 PMIS4 실측).** `060_003='T'` 현장이 5곳으로 늘었고 그중 **A0001·UT001·GC001·R2353 이 `092='F'` + `060_001='B'`** 다.
+    항목별 검토의견 경로는 **이미 발현 중**이고, 지금 바로 테스트할 수 있다. (`092='T'` 는 HT0001 하나뿐)
   - **✅ 구현 완료 (2026-07-28)** — [SfasPopRegRiskAssessmentConfirm.xml](../../src/main/webapp/wqxml/sfas/SfasPopRegRiskAssessmentConfirm.xml): oOptConfig 에 `sOpt060001`(A/B/C) 추가 · `fnValidatePerItemCmt`(092=F 이고 060_001≠A 이면 wdlCont 각 항목에 공사(`wdlConstrRvw`)·안전(`wdlSafRvw`) 검토의견 존재 확인, C 면 `PRIORITY='O'` 만) · `fnHasItemCmt` 헬퍼 · `fnRunAction` request 분기에 `fnValidateSynthOp` 다음으로 배선. 팝업 open 시 `fireEventCt("retrieve")` 가 검토의견 리스트를 로드하므로 FE 검증 안전. 문법검증(JS/XML) 통과, **런타임 미검증**(092=F+060_003=T 현장 배포 후 확인).
 
 ### 아직 확정 안 된 것

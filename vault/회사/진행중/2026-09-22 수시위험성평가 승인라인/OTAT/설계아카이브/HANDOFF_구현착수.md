@@ -1,3 +1,12 @@
+---
+title: "표준 승인(SCNT) 구현 착수 — Handoff"
+sidebar_label: "구현착수 핸드오프 (강등)"
+sidebar_position: 1
+date: 2026-07-07
+kind: 동결
+raw: "RAW-DOC:cip-defg-saas/OTAT/설계아카이브/HANDOFF_구현착수.md"
+---
+
 # 표준 승인(SCNT) 구현 착수 — Handoff
 
 > ⚠️ **[강등·아카이브] 착수 시점(2026-07-07) 좌표 문서. 아래 지시가 이후 실구현에서 번복됨 — 이 문서만 보고 구현하면 잘못된 패키지·구조로 빌드됨. 현행은 `../진행중/HANDOFF_승인팝업_세션이관.md`(현행 실장)와 `../진행중/SCNT_구현방식_공유.md`(SoT).**

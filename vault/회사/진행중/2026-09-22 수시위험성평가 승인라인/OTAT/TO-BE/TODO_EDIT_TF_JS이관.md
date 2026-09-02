@@ -1,8 +1,17 @@
+---
+title: "[백로그] EDIT_TF 수정가능 판정 → JS 이관 (시간 날 때)"
+sidebar_label: "EDIT_TF JS 이관 (백로그)"
+sidebar_position: 8
+date: 2026-07-21
+kind: 동결
+raw: "RAW-DOC:cip-defg-saas/OTAT/TO-BE/TODO_EDIT_TF_JS이관.md"
+---
+
 # [백로그] EDIT_TF 수정가능 판정 → JS 이관 (시간 날 때)
 
 > 작성: 2026-07-21 / 이찬호
 > 성격: **품질/아키텍처 개선** (버그 아님 — 현재 SQL EDIT_TF 는 정상 동작 + DB 검증 완료)
-> 관련: [SCNT_구현방식_공유.md](./SCNT_구현방식_공유.md)
+> 관련: [SCNT_구현방식_공유.md](../현행/SCNT_구현방식_공유.md)
 
 ## 문제의식
 

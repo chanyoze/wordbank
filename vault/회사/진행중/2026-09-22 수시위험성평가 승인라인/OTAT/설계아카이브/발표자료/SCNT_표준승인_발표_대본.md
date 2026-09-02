@@ -1,3 +1,12 @@
+---
+title: "승인 모듈 재사용 표준화 — 발표 대본 (스피커 노트)"
+sidebar_label: "발표 대본"
+sidebar_position: 2
+date: 2026-07-01
+kind: 동결
+raw: "RAW-DOC:cip-defg-saas/OTAT/설계아카이브/발표자료/SCNT_표준승인_발표_대본.md"
+---
+
 # 승인 모듈 재사용 표준화 — 발표 대본 (스피커 노트)
 
 > 발표자료: [SCNT_표준승인_발표.html](./SCNT_표준승인_발표.html) (좌우 화살표 ←/→, **14장**)

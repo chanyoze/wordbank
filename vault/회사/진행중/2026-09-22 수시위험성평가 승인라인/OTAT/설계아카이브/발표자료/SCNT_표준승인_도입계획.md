@@ -1,3 +1,12 @@
+---
+title: "수시위험성평가 표준 승인(SCNT) 도입 계획"
+sidebar_label: "도입계획 (강등)"
+sidebar_position: 1
+date: 2026-07-01
+kind: 동결
+raw: "RAW-DOC:cip-defg-saas/OTAT/설계아카이브/발표자료/SCNT_표준승인_도입계획.md"
+---
+
 # 수시위험성평가 표준 승인(SCNT) 도입 계획
 
 > ⚠️ **[강등·아카이브] 이 문서는 인터뷰·계획 단계(Round 1~10) 기록이며, 이후 실제 구현에서 아래 결정들이 번복됨. 현행 기준(SoT)은 `../진행중/SCNT_구현방식_공유.md`.**

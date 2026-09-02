@@ -1,3 +1,12 @@
+---
+title: "표준 승인 — 격리 테스트베드 (JaCoCo 실측) 🧪"
+sidebar_label: "testbed 안내"
+sidebar_position: 2
+date: 2026-07-07
+kind: 동결
+raw: "RAW-DOC:cip-defg-saas/OTAT/설계아카이브/예시구현/testbed/README.md"
+---
+
 # 표준 승인 — 격리 테스트베드 (JaCoCo 실측) 🧪
 
 예시구현 **BE 스켈레톤 5개 파일**(측정 대상 4개 클래스 — `CommonSanctionBridgeService`는 순수 인터페이스라 실행 라인 없음)이 "단위테스트 가능"함을 실제로 컴파일·테스트·측정해 보이는 **독립 미니 Maven 모듈**입니다.

@@ -1,3 +1,12 @@
+---
+title: "표준 승인(SCNT) 도입 제안 — 수시위험성평가 + 재사용 표준"
+sidebar_label: "표준승인 제안서"
+sidebar_position: 2
+date: 2026-07-01
+kind: 동결
+raw: "RAW-DOC:cip-defg-saas/OTAT/설계아카이브/SCNT_표준승인_제안서.md"
+---
+
 # 표준 승인(SCNT) 도입 제안 — 수시위험성평가 + 재사용 표준
 
 > 검토·합의용 제안서 (raw 계획: [SCNT_표준승인_도입계획.md](../구현참고/SCNT_표준승인_도입계획.md))

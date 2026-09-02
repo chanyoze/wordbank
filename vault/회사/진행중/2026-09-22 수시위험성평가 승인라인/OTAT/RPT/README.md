@@ -1,3 +1,12 @@
+---
+title: "상시·수시위험성평가서 리포트(클립리포트) 핸드오프"
+sidebar_label: "리포트 SoT"
+sidebar_position: 1
+date: 2026-09-02
+kind: 갱신
+raw: "RAW-DOC:cip-defg-saas/OTAT/RPT/README.md"
+---
+
 # 상시·수시위험성평가서 리포트(클립리포트) 핸드오프
 
 > 대상 화면: `SfasRegAtRiskasmtRcpt` (상시·수시위험성평가서접수)
@@ -13,6 +22,22 @@
 | `WSfAssesmentReciveRegisterTypeB.crf` | 31 | **B** | 〃 | `/sfas/WSfAssesmentReciveRegisterTypeB.crf` |
 | `WSfAssesmentReciveRegisterTypeC.crf` | 31 | **C** | 〃 | `/sfas/WSfAssesmentReciveRegisterTypeC.crf` |
 | `WSfAssesmentReciveRegisterTypeD.crf` | 31 | **D** | 〃 | `/sfas/WSfAssesmentReciveRegisterTypeD.crf` |
+
+### 1-1. 🔴 회사별 오버라이드 — 파일 선택은 2계층이다 (2026-09-02 추가)
+
+`TCC_RRPT_FILE_BAS`(기본) 위에 **`TCC_RRPT_FILE_CPN`(회사별)** 이 있고, **해당 회사 행이 있으면 기본본을 통째로 덮는다.**
+근거: [CommonPrcsSql.xml `selectReportList`](../../../src/main/resources/sqlmap/mappers/common/CommonPrcsSql.xml) — `TCC_RRPT_FILE_BAS` 쪽 Union 절이 `Not Exists (Select 1 From TCC_RRPT_FILE_CPN Where RRPT_ID = … And COMPANY_ID = …)` 로 걸러진다.
+
+현재 등록된 오버라이드 (RRPT_ID 31, 등록 2026-08-14):
+
+| COMPANY_ID | 회사 | DVS_CD | 파일 |
+|---|---|---|---|
+| 30211 | `[개발(하)] 클라우드랩` | A·B·C·D | `WSfAssesmentReciveRegister(TypeB/C/D)_LGHTEST.crf` |
+| 30212 | `[개발(원)] 클라우드랩` | A·B·C·D | 〃 |
+
+> ⚠️ **이 폴더의 `.crf` 사본은 기본본이 아니라 위 개발회사 전용본(`_LGHTEST`)이다.** 2026-08-12·08-25 에 교체되었다.
+> 같은 `DVS_CD` 인데 기본본과 계열이 어긋나 보인다(항목상세 유무가 A↔B·C 사이에서 반대). 작업 전 반드시 어느 쪽을 기준으로 하는지 확정할 것 —
+> [HANDOFF_금번수정_리포트반영.md §6-2](./HANDOFF_금번수정_리포트반영.md)
 
 `DVS_CD` 는 화면에서 이렇게 만들어진다 — [SfasRegAtRiskasmtRcpt.xml:1886](../../../src/main/webapp/wqxml/sfas/SfasRegAtRiskasmtRcpt.xml#L1886)
 
@@ -74,9 +99,32 @@ wdmScAll.set("RPT_TYPE_CODE", "UR0000000021" + "-" + wdlCdOpt.getCellData(0, "RP
 
 `SELECT_*` 접두는 **선택한 1건** 기준, 나머지는 **조회조건** 기준이다.
 
+## 5-1. 서명란은 파라미터가 아니라 DB 메타로 그려진다 (2026-09-02 추가)
+
+`.crf` 의 서명란은 고정 헤더가 아니라 **7슬롯 + DB 메타**다. 그래서 현장마다 서명란 구성이 달라도 `.crf` 는 하나다.
+
+| 계층 | 테이블 | 컬럼 |
+|---|---|---|
+| 시스템 기본 | `TSST_PROJ_RPT` / `TSST_PROJ_RPT_SIGN` | `SIGN_USE_TF` · `MIN_SIGN_CNT` · `MAX_SIGN_CNT` / `SIGN_SUB1`(역할) · `SIGN_SUB2`(직책) · `RO_CODE` · `SORT_NO` |
+| **현장별(실사용)** | `TSFAS_PROJ_REPORT` / `_DTL` | `REPORT_NM` · `SIGN_TF` · `MIN_DR_CNT` · `MAX_DR_CNT` · `DR_CNT` / `TITLE1`(역할) · `TITLE2`(직책) · `DR_CD`(직책코드) · `SORT_NO` |
+| `.crf` MAIN 필드 | — | `REPORT_NM` · `DR_CNT` · `TITLE1_1..7` · `TITLE2_1..7` · `DR_CD_1..7` · `DR_NM_1..7` · `DR_NM_IMG1..7` |
+
+등록 화면: `시스템관리 > 리포트관리 > 현장리포트서명란등록`
+— 시스템 [SstRegSystemProjectReportSigning.xml](../../../src/main/webapp/wqxml/sst/SstRegSystemProjectReportSigning.xml) · 현장별 [ccms/CcmsRegCpnProjCoustmReport.xml](../../../src/main/webapp/wqxml/ccms/CcmsRegCpnProjCoustmReport.xml)
+화면 라벨 "최소/최대/입력 서명란수" = `MIN_DR_CNT`/`MAX_DR_CNT`/`DR_CNT`.
+
+> 리포트명(`REPORT_NM`)도 이 메타에서 온다 — 리포트 타이틀을 현장별로 바꾸는 기능의 원천이다.
+
 ## 6. 변경이력 (`.crf` 는 diff 가 안 되므로 수기 관리)
 
 | 일자 | 파일 | 변경내용 | 작성자 |
 |---|---|---|---|
 | 2026-07-07 | Register / TypeB / TypeC | (사본 확보 시점) | - |
 | 2026-07-07 | TypeD | (사본 확보 시점) | - |
+| 2026-08-12 | TypeB / TypeC / TypeD | **사본 교체** — 기본본 → 개발회사 전용본(`_LGHTEST`). 파일명도 함께 바뀜 | - |
+| 2026-08-14 | (DB) | `TCC_RRPT_FILE_CPN` 에 회사 30211·30212 용 `_LGHTEST` 4종 등록 (§1-1) | - |
+| 2026-08-25 | Register | **사본 교체** — 기본본 → `WSfAssesmentReciveRegister_LGHTEST.crf` | - |
+| 2026-08-25 | `사고보고서.crf` | **사본 추가** — 승인 모듈을 리포트에 붙인 선례(`SANCTN_COMPANY_ID`·`SANCTN_PROJ_CODE`·`DEM_SN` → `SUB_SANCTN` 데이터셋). 이 폴더의 다른 `.crf` 중 유일 | - |
+| 2026-09-02 | `상시수시 리포트.png` | **자료 추가** — 승인모듈 도입 시 서명란 처리 1안/2안 비교안. **2안(서명란 유지) 채택** → [HANDOFF_금번수정_리포트반영.md](./HANDOFF_금번수정_리포트반영.md) | 이찬호 |
+
+> ⚠️ 위 "사본 교체" 3건은 **파일 내용이 8월 판정과 다르다.** 어느 쪽(기본본/개발본)을 기준으로 작업할지 먼저 정할 것 — [HANDOFF_금번수정_리포트반영.md §6-2](./HANDOFF_금번수정_리포트반영.md).

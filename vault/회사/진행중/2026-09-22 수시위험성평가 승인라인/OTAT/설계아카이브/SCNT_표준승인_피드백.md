@@ -1,3 +1,12 @@
+---
+title: "표준 승인 — 설계 리뷰 반영 사항 (피드백) 📝"
+sidebar_label: "표준승인 피드백"
+sidebar_position: 3
+date: 2026-07-01
+kind: 동결
+raw: "RAW-DOC:cip-defg-saas/OTAT/설계아카이브/SCNT_표준승인_피드백.md"
+---
+
 # 표준 승인 — 설계 리뷰 반영 사항 (피드백) 📝
 
 > 마일스톤: **[ATMS26-012] 한화오션(주) 상시·수시위험성평가 승인모듈 기능 추가**

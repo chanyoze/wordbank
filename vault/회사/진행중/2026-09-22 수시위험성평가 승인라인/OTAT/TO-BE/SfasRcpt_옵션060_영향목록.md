@@ -1,3 +1,12 @@
+---
+title: "SfasRegAtRiskasmtRcpt — `SFAS_OPT_060=T` 활성 항목 전수 목록"
+sidebar_label: "접수화면 060 seam"
+sidebar_position: 5
+date: 2026-08-28
+kind: 갱신
+raw: "RAW-DOC:cip-defg-saas/OTAT/TO-BE/SfasRcpt_옵션060_영향목록.md"
+---
+
 # SfasRegAtRiskasmtRcpt — `SFAS_OPT_060=T` 활성 항목 전수 목록
 
 > **목적**: 신규 옵션 `SFAS_OPT_060_003`(SCNT 표준승인) 도입 시, 기존 결재(060=T)에서만 켜지는 컬럼·로직을 **비활성화 / SCNT 분기로 교체**해야 하는 지점을 미리 카탈로그화.
@@ -8,6 +17,10 @@
 > 📌 **옵션 파이프라인·결측 동작·승인 게이트 진리표**: [옵션전수 §10~§13](./SfasRcpt_옵션전수_화면제어.md#10-옵션-전달-파이프라인--값이-화면까지-오는-경로-2026-08-05-신설)
 >
 > 중앙 플래그: `scwin.oOptConfig.bUseOpt060`(= `SFAS_OPT_060=='T'`, "승인프로세스 사용여부") — [2132](../../src/main/webapp/wqxml/sfas/SfasRegAtRiskasmtRcpt.xml#L2132)
+
+---
+
+> 🔗 **컬럼 축 교차검증**: [컬럼표시_화면대조.md](../컬럼표시_화면대조.md) — 아래 조건들이 승인 팝업에서도 같은지 대조한 표.
 
 ---
 
